@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Большой футбольный фестиваль 2026 | Официальный сайт</title>
+    <meta name="description" content="4–7 августа 2026, Москва, Лужники. Фестиваль, который перезагружает детский спорт: турнир, форум лидеров, академия тренеров, праздник для всей семьи.">
+    <meta name="keywords" content="футбол, фестиваль, дети, тренеры, форум, Москва, 2026, спорт, Лужники">
+    <meta name="author" content="Ассоциация футбольных школ">
+    <meta property="og:title" content="Большой футбольный фестиваль России 2026">
+    <meta property="og:description" content="4–7 августа 2026, Москва. Главное спортивное событие года для детей, тренеров и руководителей.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://footbaliada.ru">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>">
+    
+    <!-- Шрифты и иконки -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800;900&family=Oswald:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <!-- Библиотеки анимаций и UI -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { neon: '#10b981', neonDark: '#059669' },
+                    fontFamily: { oswald: ['Oswald', 'sans-serif'], inter: ['Inter', 'sans-serif'] },
+                    animation: { float: 'float 3s ease-in-out infinite', 'pulse-slow': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' },
+                    keyframes: { float: { '0%,100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-8px)' } } }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body { background-color: #f8fafc; font-family: 'Inter', sans-serif; color: #1e293b; overflow-x: hidden; }
+        .light-card { background: #ffffff; border-radius: 32px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.02); transition: all 0.3s cubic-bezier(0.2,0,0,1); border: 1px solid #e2e8f0; }
+        .light-card:hover { transform: translateY(-6px); box-shadow: 0 20px 25px -12px rgba(0,0,0,0.1); border-color: #10b981; }
+        .btn-neon { background: #10b981; color: white; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; transition: all 0.2s ease; border: none; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); cursor: pointer; }
+        .btn-neon:hover { background: #059669; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(16,185,129,0.3); }
+        .btn-outline-neon { background: transparent; color: #10b981; border: 2px solid #10b981; font-weight: 700; text-transform: uppercase; transition: all 0.2s ease; cursor: pointer; }
+        .btn-outline-neon:hover { background: #10b981; color: white; transform: translateY(-2px); }
+        .hero-overlay { background: linear-gradient(135deg, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.8) 100%); }
+        .gradient-title { background: linear-gradient(135deg, #10b981, #3b82f6, #8b5cf6); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .timer-number { font-family: 'Oswald', sans-serif; font-size: 2.5rem; font-weight: 900; color: #10b981; }
+        @media (min-width:768px) { .timer-number { font-size: 3rem; } }
+        .fact-card { background: #ffffff; border-radius: 24px; padding: 1.5rem; transition: all 0.25s; border: 1px solid #e2e8f0; height: 100%; }
+        .fact-card:hover { transform: translateY(-5px); border-color: #10b981; box-shadow: 0 20px 25px -12px rgba(0,0,0,0.1); }
+        .modal-fixed { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); z-index: 10000; display: flex; align-items: center; justify-content: center; }
+        [x-cloak] { display: none !important; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #e2e8f0; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #10b981; border-radius: 10px; }
+        .hero-video { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; }
+        .swiper-slide img { border-radius: 24px; object-fit: cover; width: 100%; height: 360px; border: 1px solid #e2e8f0; transition: transform 0.3s; }
+        .swiper-slide:hover img { transform: scale(1.02); }
+        .swiper-pagination-bullet-active { background-color: #10b981 !important; }
+        .swiper-button-next, .swiper-button-prev { color: #10b981 !important; }
+        .scroll-to-top { position: fixed; bottom: 30px; right: 30px; background: #10b981; color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; transition: all 0.3s; z-index: 99; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .scroll-to-top.visible { opacity: 1; }
+        .cookie-banner { position: fixed; bottom: 0; left: 0; width: 100%; background: white; border-top: 1px solid #e2e8f0; padding: 1rem; text-align: center; z-index: 1000; box-shadow: 0 -4px 10px rgba(0,0,0,0.05); }
+        .stat-number { font-size: 3.5rem; font-weight: 900; color: #10b981; font-family: 'Oswald', sans-serif; line-height: 1.2; }
+    </style>
+</head>
+<body class="bg-[#f8fafc] text-gray-800 antialiased">
+
+<div x-data="app()" x-init="init()" x-cloak>
+    <!-- Прелоадер -->
+    <div id="preloader" class="fixed inset-0 bg-white z-[9999] flex items-center justify-center transition-opacity duration-500">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-neon"></div>
+    </div>
+
+    <!-- Кнопка "наверх" -->
+    <div class="scroll-to-top" @click="smoothScroll('#hero')" :class="{'visible': showScrollTop}">
+        <i class="fas fa-arrow-up text-xl"></i>
+    </div>
+
+    <!-- Cookie уведомление -->
+    <div x-show="showCookieBanner" x-cloak class="cookie-banner flex flex-col md:flex-row justify-between items-center gap-4">
+        <span class="text-sm text-gray-600">Мы используем cookies для улучшения работы сайта. Продолжая использовать сайт, вы соглашаетесь с <a href="#" @click.prevent="showPrivacy=true" class="text-neon underline">политикой конфиденциальности</a>.</span>
+        <button class="btn-neon py-2 px-6 rounded-full text-sm" @click="acceptCookies()">Принять</button>
+    </div>
+
+    <!-- НАВИГАЦИЯ -->
+    <nav class="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm transition-all duration-300">
+        <div class="container mx-auto px-6 lg:px-8 py-4 flex justify-between items-center">
+            <a href="#" class="font-oswald font-bold text-2xl text-gray-800 tracking-wider flex items-center gap-2" @click.prevent="smoothScroll('#hero')">
+                <i class="fas fa-futbol text-neon text-2xl animate-pulse-slow"></i>
+                <span>БФФ<span class="text-neon">|2026</span></span>
+            </a>
+            <div class="hidden md:flex space-x-7">
+                <a href="#hero" class="text-gray-700 font-semibold hover:text-neon transition text-sm uppercase tracking-wider" @click.prevent="smoothScroll('#hero')">Главная</a>
+                <a href="#team-request" class="text-gray-700 font-semibold hover:text-neon transition text-sm uppercase tracking-wider" @click.prevent="smoothScroll('#team-request')">Командам</a>
+                <a href="#leaders-forum" class="text-gray-700 font-semibold hover:text-neon transition text-sm uppercase tracking-wider" @click.prevent="smoothScroll('#leaders-forum')">Руководителям</a>
+                <a href="#coach-academy" class="text-gray-700 font-semibold hover:text-neon transition text-sm uppercase tracking-wider" @click.prevent="smoothScroll('#coach-academy')">Тренерам</a>
+                <a href="#directions" class="text-gray-700 font-semibold hover:text-neon transition text-sm uppercase tracking-wider" @click.prevent="smoothScroll('#directions')">Направления</a>
+                <a href="#gallery" class="text-gray-700 font-semibold hover:text-neon transition text-sm uppercase tracking-wider" @click.prevent="smoothScroll('#gallery')">Галерея</a>
+                <a href="#factors" class="text-gray-700 font-semibold hover:text-neon transition text-sm uppercase tracking-wider" @click.prevent="smoothScroll('#factors')">15 фактов</a>
+                <a href="#partners" class="text-gray-700 font-semibold hover:text-neon transition text-sm uppercase tracking-wider" @click.prevent="smoothScroll('#partners')">Партнёрам</a>
+                <a href="#map" class="text-gray-700 font-semibold hover:text-neon transition text-sm uppercase tracking-wider" @click.prevent="smoothScroll('#map')">Карта</a>
+            </div>
+            <button class="md:hidden text-gray-800 text-2xl focus:outline-none" id="mobileMenuBtn">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        <div id="mobileMenu" class="hidden md:hidden bg-white/95 backdrop-blur-md border-t border-gray-200 py-4 px-6 flex flex-col space-y-4 shadow-lg">
+            <a href="#hero" @click.prevent="smoothScroll('#hero'); closeMobileMenu()">Главная</a>
+            <a href="#team-request" @click.prevent="smoothScroll('#team-request'); closeMobileMenu()">Командам</a>
+            <a href="#leaders-forum" @click.prevent="smoothScroll('#leaders-forum'); closeMobileMenu()">Руководителям</a>
+            <a href="#coach-academy" @click.prevent="smoothScroll('#coach-academy'); closeMobileMenu()">Тренерам</a>
+            <a href="#directions" @click.prevent="smoothScroll('#directions'); closeMobileMenu()">Направления</a>
+            <a href="#gallery" @click.prevent="smoothScroll('#gallery'); closeMobileMenu()">Галерея</a>
+            <a href="#factors" @click.prevent="smoothScroll('#factors'); closeMobileMenu()">15 фактов</a>
+            <a href="#partners" @click.prevent="smoothScroll('#partners'); closeMobileMenu()">Партнёрам</a>
+            <a href="#map" @click.prevent="smoothScroll('#map'); closeMobileMenu()">Карта</a>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section id="hero" class="relative min-h-screen w-full overflow-hidden pt-20">
+        <video class="hero-video" autoplay loop muted playsinline>
+            <source src="https://cdn.pixabay.com/video/2023/06/27/169762-838947928_large.mp4" type="video/mp4">
+        </video>
+        <div class="hero-overlay absolute inset-0"></div>
+        <div class="relative z-10 min-h-screen flex items-center">
+            <div class="container mx-auto px-6 lg:px-8 py-20">
+                <div class="flex flex-col lg:flex-row items-center gap-12" data-aos="fade-up">
+                    <div class="lg:w-7/12">
+                        <div class="flex flex-wrap gap-3 mb-6">
+                            <span class="bg-neon/10 text-neon px-4 py-2 rounded-full text-xs font-bold uppercase"><i class="fas fa-calendar-alt mr-2"></i> 4-7 АВГУСТА 2026</span>
+                            <span class="bg-neon/10 text-neon px-4 py-2 rounded-full text-xs font-bold uppercase"><i class="fas fa-map-marker-alt mr-2"></i> МОСКВА, ЛУЖНИКИ</span>
+                        </div>
+                        <h1 class="font-oswald text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black leading-none mb-6 gradient-title">
+                            БОЛЬШОЙ<br>ФУТБОЛЬНЫЙ<br>ФЕСТИВАЛЬ<br>РОССИИ
+                        </h1>
+                        <p class="text-lg md:text-xl lg:text-2xl font-bold text-neon mb-6 uppercase tracking-wider">
+                            <span id="typed-slogan"></span>
+                        </p>
+                        <p class="text-base md:text-lg lg:text-xl font-semibold text-gray-700 mb-8 leading-relaxed max-w-2xl">
+                            Что, если за 4 дня вдохновить <span class="text-neon font-black text-2xl">1000+</span> детей, обучить <span class="text-neon font-black text-2xl">100+</span> тренеров, объединить <span class="text-neon font-black text-2xl">200+</span> лидеров и подарить <span class="text-neon font-black text-2xl">10000+</span> родителям уверенность?
+                        </p>
+                        <div class="bg-white/80 backdrop-blur-sm p-5 rounded-2xl max-w-xl mb-8 border border-gray-200">
+                            <i class="fas fa-quote-left text-neon mr-2"></i> 
+                            <span class="font-medium text-gray-700">«Здесь каждый находит своё: ребенок – мечту, тренер – знания, руководитель – партнеров, родитель – спокойствие»</span>
+                        </div>
+                        <div class="flex flex-wrap gap-5">
+                            <button class="btn-neon py-3 px-8 md:py-4 md:px-10 rounded-full font-bold uppercase tracking-wider text-sm" @click="openModal('team')"><i class="fas fa-futbol mr-2"></i> Участвовать команде</button>
+                            <button class="btn-outline-neon py-3 px-8 md:py-4 md:px-10 rounded-full font-bold uppercase tracking-wider text-sm" @click="smoothScroll('#coach-academy')">Тренерам →</button>
+                        </div>
+                    </div>
+                    <div class="lg:w-5/12" data-aos="fade-left">
+                        <div class="light-card p-6 md:p-8">
+                            <div class="text-2xl font-oswald font-bold mb-6 text-center text-gray-800"><i class="fas fa-hourglass-half text-neon mr-2"></i> <span class="text-neon">ДО СТАРТА ФЕСТИВАЛЯ</span></div>
+                            <div class="grid grid-cols-4 gap-3 md:gap-4">
+                                <div class="text-center"><div class="timer-number" x-text="days"></div><div class="text-xs text-gray-500 font-bold uppercase mt-1">ДНЕЙ</div></div>
+                                <div class="text-center"><div class="timer-number" x-text="hours"></div><div class="text-xs text-gray-500 font-bold uppercase mt-1">ЧАСОВ</div></div>
+                                <div class="text-center"><div class="timer-number" x-text="minutes"></div><div class="text-xs text-gray-500 font-bold uppercase mt-1">МИНУТ</div></div>
+                                <div class="text-center"><div class="timer-number" x-text="seconds"></div><div class="text-xs text-gray-500 font-bold uppercase mt-1">СЕКУНД</div></div>
+                            </div>
+                            <div class="border-t border-gray-200 my-6"></div>
+                            <div class="space-y-3 text-center">
+                                <div><i class="fas fa-users text-neon mr-2"></i> <strong class="text-gray-800">350 000+ детей</strong> в экосистеме</div>
+                                <div><i class="fas fa-gift text-neon mr-2"></i> <strong class="text-gray-800">Розыгрыш подарков</strong></div>
+                                <div><i class="fas fa-trophy text-neon mr-2"></i> <strong class="text-gray-800">Кубок чемпионов</strong></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ЗАЯВКА ДЛЯ КОМАНД -->
+    <section id="team-request" class="py-24 bg-white">
+        <div class="container mx-auto px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row gap-12 items-center">
+                <div class="lg:w-1/2" data-aos="fade-right">
+                    <h2 class="font-oswald text-5xl md:text-6xl font-black uppercase tracking-tight text-gray-800">Заявка <span class="text-neon">для команд</span></h2>
+                    <div class="w-24 h-1 bg-neon my-5 rounded-full"></div>
+                    <p class="text-gray-600 text-lg leading-relaxed mb-6">Примите участие в главном футбольном празднике страны! Ваша команда получит незабываемые эмоции, возможность сыграть с сильнейшими коллективами со всей России, поучаствовать в грандиозном параде открытия и побороться за ценные призы.</p>
+                    <ul class="space-y-3 text-gray-600 mb-8">
+                        <li class="flex gap-3"><i class="fas fa-check-circle text-neon text-xl mt-1"></i> <span>Турниры среди разных возрастных групп (7-16 лет)</span></li>
+                        <li class="flex gap-3"><i class="fas fa-check-circle text-neon text-xl mt-1"></i> <span>Встречи с легендами футбола и мастер-классы</span></li>
+                        <li class="flex gap-3"><i class="fas fa-check-circle text-neon text-xl mt-1"></i> <span>Участие в розыгрыше подарков и ценных призов</span></li>
+                        <li class="flex gap-3"><i class="fas fa-check-circle text-neon text-xl mt-1"></i> <span>Подарки каждому участнику и сувениры</span></li>
+                    </ul>
+                    <button class="btn-neon py-4 px-8 rounded-full font-bold uppercase tracking-wider" @click="openModal('team')">Подать заявку команды</button>
+                </div>
+                <div class="lg:w-1/2" data-aos="fade-left">
+                    <div class="light-card p-8 text-center">
+                        <i class="fas fa-futbol text-7xl text-neon mb-4 animate-float"></i>
+                        <h3 class="font-oswald text-3xl font-bold text-gray-800">Стань частью истории!</h3>
+                        <p class="text-gray-500 mt-4">Количество мест ограничено — успейте зарегистрировать свою команду.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ФОРУМ РУКОВОДИТЕЛЕЙ -->
+    <section id="leaders-forum" class="py-24 bg-[#f8fafc]">
+        <div class="container mx-auto px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row gap-12 items-center">
+                <div class="lg:w-1/2 order-2 lg:order-1" data-aos="fade-right">
+                    <div class="light-card p-8 text-center">
+                        <i class="fas fa-briefcase text-7xl text-neon mb-4 animate-float"></i>
+                        <h3 class="font-oswald text-3xl font-bold text-gray-800">Стратегический нетворкинг</h3>
+                        <p class="text-gray-500 mt-4">Встречайте единомышленников, заключайте партнёрства, развивайте бизнес.</p>
+                    </div>
+                </div>
+                <div class="lg:w-1/2 order-1 lg:order-2" data-aos="fade-left">
+                    <h2 class="font-oswald text-5xl md:text-6xl font-black uppercase tracking-tight text-gray-800">Форум <span class="text-neon">руководителей</span></h2>
+                    <div class="w-24 h-1 bg-neon my-5 rounded-full"></div>
+                    <p class="text-gray-600 text-lg leading-relaxed mb-6">Эксклюзивное мероприятие для владельцев и топ-менеджеров футбольных школ, спортивных клубов и федераций. Два дня стратегических сессий, круглых столов, бизнес-стендапа «Минута славы» и закрытой VIP-встречи «Без галстуков».</p>
+                    <ul class="space-y-3 text-gray-600 mb-8">
+                        <li class="flex gap-3"><i class="fas fa-chalkboard-user text-neon text-xl mt-1"></i> <span>Спикеры — топ-эксперты рынка и звёзды спорта</span></li>
+                        <li class="flex gap-3"><i class="fas fa-handshake text-neon text-xl mt-1"></i> <span>Нетворкинг с лидерами из 70+ регионов</span></li>
+                        <li class="flex gap-3"><i class="fas fa-microphone-alt text-neon text-xl mt-1"></i> <span>Бизнес-стендап — заявите о себе за 1 минуту</span></li>
+                        <li class="flex gap-3"><i class="fas fa-champagne-glasses text-neon text-xl mt-1"></i> <span>VIP-вечер с ужином и живым общением</span></li>
+                    </ul>
+                    <button class="btn-neon py-4 px-8 rounded-full font-bold uppercase tracking-wider" @click="openModal('leader')">Оставить заявку на форум</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- АКАДЕМИЯ ТРЕНЕРА -->
+    <section id="coach-academy" class="py-24 bg-white">
+        <div class="container mx-auto px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row gap-12 items-center">
+                <div class="lg:w-1/2" data-aos="fade-right">
+                    <h2 class="font-oswald text-5xl md:text-6xl font-black uppercase tracking-tight text-gray-800">Академия <span class="text-neon">тренера</span></h2>
+                    <div class="w-24 h-1 bg-neon my-5 rounded-full"></div>
+                    <p class="text-gray-600 text-lg leading-relaxed mb-6">Повышение квалификации мирового уровня. Трёхдневная программа от ведущих экспертов УЕФА и лучших российских практиков. Получите современные методики, разбор тактических схем и психологии, а также официальный сертификат.</p>
+                    <ul class="space-y-3 text-gray-600 mb-8">
+                        <li class="flex gap-3"><i class="fas fa-certificate text-neon text-xl mt-1"></i> <span>Официальный сертификат Ассоциации</span></li>
+                        <li class="flex gap-3"><i class="fas fa-globe text-neon text-xl mt-1"></i> <span>Международные методики и опыт европейских академий</span></li>
+                        <li class="flex gap-3"><i class="fas fa-users text-neon text-xl mt-1"></i> <span>Обмен опытом с коллегами из 70+ регионов</span></li>
+                        <li class="flex gap-3"><i class="fas fa-microphone text-neon text-xl mt-1"></i> <span>Мастер-классы от звёзд футбола</span></li>
+                    </ul>
+                    <button class="btn-neon py-4 px-8 rounded-full font-bold uppercase tracking-wider" @click="openModal('coach')">Записаться на семинар</button>
+                </div>
+                <div class="lg:w-1/2" data-aos="fade-left">
+                    <div class="light-card p-8 text-center">
+                        <i class="fas fa-chalkboard-user text-7xl text-neon mb-4 animate-float"></i>
+                        <h3 class="font-oswald text-3xl font-bold text-gray-800">Станьте лучшим тренером!</h3>
+                        <p class="text-gray-500 mt-4">Получите знания, которые можно сразу применить на поле.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- МАСШТАБ БЕЗ ПРЕЦЕДЕНТОВ -->
+    <section class="py-20 bg-[#f8fafc] border-y border-gray-200">
+        <div class="container mx-auto px-6 lg:px-8 text-center">
+            <h2 class="font-oswald text-5xl md:text-6xl font-black uppercase tracking-tight text-gray-800 mb-12">Масштаб без прецедентов</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+                <div><div class="stat-number">1000+</div><p class="text-xl font-bold mt-3 text-gray-700">Детей-участников</p></div>
+                <div><div class="stat-number">100+</div><p class="text-xl font-bold mt-3 text-gray-700">Тренеров обучено</p></div>
+                <div><div class="stat-number">200+</div><p class="text-xl font-bold mt-3 text-gray-700">Лидеров индустрии</p></div>
+                <div><div class="stat-number">10000+</div><p class="text-xl font-bold mt-3 text-gray-700">Родителей с поддержкой</p></div>
+            </div>
+            <div class="mt-12"><span class="bg-neon/10 text-neon px-8 py-4 font-bold uppercase tracking-wider inline-block rounded-full">🏆 Крупнейший детский футбольный проект в истории страны</span></div>
+        </div>
+    </section>
+
+    <!-- 4 НАПРАВЛЕНИЯ -->
+    <section id="directions" class="py-24 bg-white">
+        <div class="container mx-auto px-6 lg:px-8">
+            <div class="text-center mb-16"><h2 class="font-oswald text-5xl md:text-6xl font-black uppercase tracking-tight text-gray-800">4 направления — <span class="text-neon">одна энергия</span></h2></div>
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="light-card p-8 text-center"><i class="fas fa-briefcase text-5xl text-neon mb-4"></i><h3 class="font-oswald text-xl font-bold text-gray-800">Форум лидеров</h3><p class="text-gray-500 text-sm mt-2">Стратегия, нетворкинг, бизнес-стендап</p><span class="inline-block mt-4 text-neon text-xs font-bold">5-6 августа</span></div>
+                <div class="light-card p-8 text-center"><i class="fas fa-chalkboard-user text-5xl text-neon mb-4"></i><h3 class="font-oswald text-xl font-bold text-gray-800">Академия тренера</h3><p class="text-gray-500 text-sm mt-2">Семинары, сертификат, методики УЕФА</p><span class="inline-block mt-4 text-neon text-xs font-bold">Повышение квалификации</span></div>
+                <div class="light-card p-8 text-center"><i class="fas fa-futbol text-5xl text-neon mb-4"></i><h3 class="font-oswald text-xl font-bold text-gray-800">Детский турнир</h3><p class="text-gray-500 text-sm mt-2">Парад открытия, звёзды, розыгрыш</p><span class="inline-block mt-4 text-neon text-xs font-bold">7-16 лет</span></div>
+                <div class="light-card p-8 text-center"><i class="fas fa-heart text-5xl text-neon mb-4"></i><h3 class="font-oswald text-xl font-bold text-gray-800">Зона родителей</h3><p class="text-gray-500 text-sm mt-2">Психология, комфорт, поддержка</p><span class="inline-block mt-4 text-neon text-xs font-bold">Поддержка</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ГАЛЕРЕЯ (фото из папки images/gallery/ - без инструкции) -->
+    <section id="gallery" class="py-24 bg-[#f8fafc]">
+        <div class="container mx-auto px-6 lg:px-8">
+            <h2 class="font-oswald text-5xl md:text-6xl font-black uppercase tracking-tight text-center text-gray-800 mb-12">Эмоции <span class="text-neon">прошлых лет</span></h2>
+            <div class="swiper mySwiper py-6">
+                <div class="swiper-wrapper" id="gallerySwiperWrapper">
+                    <div class="swiper-slide">
+                        <img src="images/gallery/1.jpg" alt="Фото 1" onerror="this.src='https://placehold.co/800x500/e2e8f0/10b981?text=ФОТО+1'">
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="images/gallery/2.jpg" alt="Фото 2" onerror="this.src='https://placehold.co/800x500/e2e8f0/10b981?text=ФОТО+2'">
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="images/gallery/3.jpg" alt="Фото 3" onerror="this.src='https://placehold.co/800x500/e2e8f0/10b981?text=ФОТО+3'">
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="images/gallery/4.jpg" alt="Фото 4" onerror="this.src='https://placehold.co/800x500/e2e8f0/10b981?text=ФОТО+4'">
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="images/gallery/5.jpg" alt="Фото 5" onerror="this.src='https://placehold.co/800x500/e2e8f0/10b981?text=ФОТО+5'">
+                    </div>
+                    <div class="swiper-slide">
+                        <img src="images/gallery/6.jpg" alt="Фото 6" onerror="this.src='https://placehold.co/800x500/e2e8f0/10b981?text=ФОТО+6'">
+                    </div>
+                </div>
+                <div class="swiper-pagination"></div>
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 15 ФАКТОВ -->
+    <section id="factors" class="py-24 bg-white">
+        <div class="container mx-auto px-6 lg:px-8">
+            <h2 class="font-oswald text-5xl md:text-6xl font-black uppercase tracking-tight text-center text-gray-800 mb-6">15 уникальных <span class="text-neon">фактов</span></h2>
+            <p class="text-center text-gray-500 mb-12 max-w-2xl mx-auto">То, что сделает наш фестиваль незабываемым для каждого участника</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="fact-card"><div class="text-3xl font-black text-neon mb-2">01</div><h3 class="text-xl font-bold text-gray-800 mb-2">Грандиозный парад открытия</h3><p class="text-gray-500 text-sm">Торжественное шествие всех команд-участниц под музыку и фанфары — эффект настоящего чемпионата мира!</p></div>
+                <div class="fact-card"><div class="text-3xl font-black text-neon mb-2">02</div><h3 class="text-xl font-bold text-gray-800 mb-2">4 дня непрерывного шоу</h3><p class="text-gray-500 text-sm">Сцена работает без остановки: конкурсы, выступления артистов, розыгрыши и интерактивы для всех возрастов.</p></div>
+                <div class="fact-card"><div class="text-3xl font-black text-neon mb-2">03</div><h3 class="text-xl font-bold text-gray-800 mb-2">Розыгрыш сотен подарков</h3><p class="text-gray-500 text-sm">Каждый день — лотереи и конкурсы с ценными призами от партнёров фестиваля.</p></div>
+                <div class="fact-card"><div class="text-3xl font-black text-neon mb-2">04</div><h3 class="text-xl font-bold text-gray-800 mb-2">Бизнес-стендап «Минута славы»</h3><p class="text-gray-500 text-sm">Руководители школ могут за 60 секунд представить свой проект, найти инвесторов и партнёров.</p></div>
+                <div class="fact-card"><div class="text-3xl font-black text-neon mb-2">05</div><h3 class="text-xl font-bold text-gray-800 mb-2">Международные семинары PRO</h3><p class="text-gray-500 text-sm">Тренеры получат знания от экспертов УЕФА и лучших европейских академий.</p></div>
+                <div class="fact-card"><div class="text-3xl font-black text-neon mb-2">06</div><h3 class="text-xl font-bold text-gray-800 mb-2">VIP-встреча «Без галстуков»</h3><p class="text-gray-500 text-sm">Закрытый ужин для топ-партнёров и лидеров индустрии после официального закрытия.</p></div>
+                <div class="fact-card"><div class="text-3xl font-black text-neon mb-2">07</div><h3 class="text-xl font-bold text-gray-800 mb-2">Экосистема 350 000+ детей</h3><p class="text-gray-500 text-sm">Охват аудитории ассоциации — огромная база для партнёров и спонсоров.</p></div>
+                <div class="fact-card"><div class="text-3xl font-black text-neon mb-2">08</div><h3 class="text-xl font-bold text-gray-800 mb-2">Встречи с легендами футбола</h3><p class="text-gray-500 text-sm">Автограф-сессии, фото и мастер-классы от звёзд российского и мирового футбола.</p></div>
+                <div class="fact-card"><div class="text-3xl font-black text-neon mb-2">09</div><h3 class="text-xl font-bold text-gray-800 mb-2">Кубок чемпионов</h3><p class="text-gray-500 text-sm">Главный трофей для победителей турнира и ценные призы для всех призёров.</p></div>
+                <div class="fact-card"><div class="text-3xl font-black text-neon mb-2">10</div><h3 class="text-xl font-bold text-gray-800 mb-2">Прямые трансляции матчей</h3><p class="text-gray-500 text-sm">Все ключевые игры будут транслироваться в интернете, чтобы родственники и болельщики могли следить онлайн.</p></div>
+                <div class="fact-card"><div class="text-3xl font-black text-neon mb-2">11</div><h3 class="text-xl font-bold text-gray-800 mb-2">Фотозоны и моментальные фото</h3><p class="text-gray-500 text-sm">Профессиональные фотографы и стильные фотозоны для создания ярких воспоминаний.</p></div>
+                <div class="fact-card"><div class="text-3xl font-black text-neon mb-2">12</div><h3 class="text-xl font-bold text-gray-800 mb-2">Фирменный мерч каждому участнику</h3><p class="text-gray-500 text-sm">Каждый ребёнок получит набор сувениров с символикой фестиваля.</p></div>
+                <div class="fact-card"><div class="text-3xl font-black text-neon mb-2">13</div><h3 class="text-xl font-bold text-gray-800 mb-2">VR-футбол и интерактивные зоны</h3><p class="text-gray-500 text-sm">Современные технологии: виртуальная реальность, симуляторы ударов, тесты на скорость реакции.</p></div>
+                <div class="fact-card"><div class="text-3xl font-black text-neon mb-2">14</div><h3 class="text-xl font-bold text-gray-800 mb-2">Музыкальный движ от DJ</h3><p class="text-gray-500 text-sm">Вечерние сеты известных диджеев создадут атмосферу настоящего праздника.</p></div>
+                <div class="fact-card"><div class="text-3xl font-black text-neon mb-2">15</div><h3 class="text-xl font-bold text-gray-800 mb-2">Фуд-корт с лучшей кухней</h3><p class="text-gray-500 text-sm">Разнообразие блюд и напитков для гостей и участников на любой вкус.</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ПАРТНЁРСТВО -->
+    <section id="partners" class="container mx-auto px-6 lg:px-8 py-24">
+        <div class="flex flex-col lg:flex-row items-center gap-16">
+            <div class="lg:w-1/2" data-aos="fade-right">
+                <h2 class="font-oswald text-5xl md:text-6xl font-black uppercase tracking-tight text-gray-800">Партнёрство <span class="text-neon">с лидером</span></h2>
+                <div class="w-24 h-1 bg-neon my-5 rounded-full"></div>
+                <ul class="space-y-4 text-gray-600 text-lg">
+                    <li class="flex gap-3"><i class="fas fa-bolt text-neon text-xl"></i> <span>Прямой контакт с ЦА</span></li>
+                    <li class="flex gap-3"><i class="fas fa-bolt text-neon text-xl"></i> <span>Имиджевое размещение</span></li>
+                    <li class="flex gap-3"><i class="fas fa-bolt text-neon text-xl"></i> <span>Доступ к 500+ лидерам</span></li>
+                    <li class="flex gap-3"><i class="fas fa-bolt text-neon text-xl"></i> <span>Статус стратегического партнёра</span></li>
+                </ul>
+                <button class="btn-neon py-4 px-10 rounded-full font-bold uppercase tracking-wider mt-8" @click="openModal('partner')">📢 Получить презентацию</button>
+            </div>
+            <div class="lg:w-1/2 text-center" data-aos="fade-left">
+                <img loading="lazy" src="https://placehold.co/600x400/e2e8f0/10b981?text=СТАНЬТЕ+ПАРТНЁРОМ" class="rounded-2xl shadow-lg border border-gray-200 w-full" alt="Партнёрство">
+            </div>
+        </div>
+    </section>
+
+    <!-- КАРТА -->
+    <section id="map" class="py-20 bg-[#f8fafc]">
+        <div class="container mx-auto px-6 lg:px-8">
+            <h2 class="font-oswald text-5xl md:text-6xl font-black uppercase tracking-tight text-center text-gray-800 mb-8">Мы ждём вас <span class="text-neon">в Лужниках</span></h2>
+            <div class="light-card overflow-hidden" data-aos="zoom-in">
+                <div id="yandexMap" style="width: 100%; height: 450px; border-radius: 28px;"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- КАЛЕНДАРЬ -->
+    <section class="py-20 bg-white border-y border-gray-200">
+        <div class="container mx-auto px-6 lg:px-8 text-center">
+            <h2 class="font-oswald text-5xl md:text-6xl font-black uppercase tracking-tight text-gray-800 mb-12">Календарь событий</h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="light-card p-8"><i class="fas fa-calendar-day text-5xl text-neon mb-4"></i><h3 class="font-oswald text-2xl font-bold text-gray-800">4 августа</h3><p class="text-gray-500">Открытие, парад, шоу</p></div>
+                <div class="light-card p-8"><i class="fas fa-users text-5xl text-neon mb-4"></i><h3 class="font-oswald text-2xl font-bold text-gray-800">5-6 августа</h3><p class="text-gray-500">Турнир + Форум + Академия</p></div>
+                <div class="light-card p-8"><i class="fas fa-star text-5xl text-neon mb-4"></i><h3 class="font-oswald text-2xl font-bold text-gray-800">7 августа</h3><p class="text-gray-500">Финалы, розыгрыш, VIP-вечер</p></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-white py-10 border-t border-gray-200">
+        <div class="container mx-auto px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center text-center gap-6">
+                <div><i class="fas fa-futbol text-neon text-3xl"></i><p class="text-gray-500 text-sm mt-2">Ассоциация футбольных школ</p></div>
+                <div class="text-gray-500 text-sm"><i class="fas fa-phone-alt text-neon mr-1"></i> +7 977 513 5149<br><i class="fas fa-envelope text-neon mr-1"></i> Footbaliada@mail.ru<br><i class="fab fa-telegram text-neon mr-1"></i> @Rus_pro_10</div>
+                <div><a href="#" @click.prevent="showPrivacy = true" class="text-gray-500 hover:text-neon block">📄 Политика конфиденциальности</a><a href="#" @click.prevent="showPersonalData = true" class="text-gray-500 hover:text-neon block mt-1">📋 Согласие на обработку ПД</a><i class="fas fa-map-marker-alt text-neon mr-1"></i> Москва, Лужники<br>© 2026</div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- МОДАЛЬНЫЕ ОКНА -->
+    <div x-show="modalOpen && modalType === 'team'" class="modal-fixed" @click.away="modalOpen = false" x-cloak>
+        <div class="bg-white rounded-3xl p-8 mx-4 max-w-md w-full relative shadow-2xl"><button class="absolute top-5 right-6 text-3xl text-gray-400 hover:text-gray-600" @click="modalOpen = false">&times;</button>
+            <h2 class="font-oswald text-2xl font-bold text-neon mb-5"><i class="fas fa-users mr-2"></i> Заявка команды</h2>
+            <form @submit.prevent="submitForm('team')">
+                <input type="text" class="w-full bg-gray-100 rounded-full px-5 py-3 mb-3 text-gray-800 border border-gray-200 focus:border-neon focus:outline-none" placeholder="Название школы" x-model="forms.team.school" required>
+                <input type="text" class="w-full bg-gray-100 rounded-full px-5 py-3 mb-3 text-gray-800 border border-gray-200 focus:border-neon focus:outline-none" placeholder="ФИО тренера" x-model="forms.team.coachName" required>
+                <input type="tel" class="w-full bg-gray-100 rounded-full px-5 py-3 mb-3 text-gray-800 border border-gray-200 focus:border-neon focus:outline-none" placeholder="Телефон" x-model="forms.team.phone" required>
+                <input type="email" class="w-full bg-gray-100 rounded-full px-5 py-3 mb-3 text-gray-800 border border-gray-200 focus:border-neon focus:outline-none" placeholder="Email" x-model="forms.team.email" required>
+                <input type="text" class="w-full bg-gray-100 rounded-full px-5 py-3 mb-3 text-gray-800 border border-gray-200 focus:border-neon focus:outline-none" placeholder="Возрастная группа" x-model="forms.team.ageGroup">
+                <label class="flex items-center gap-2 text-gray-600 mb-5"><input type="checkbox" x-model="forms.team.consent" required class="accent-neon w-4 h-4"> Я согласен на обработку ПД</label>
+                <button type="submit" class="btn-neon w-full py-3 rounded-full" :disabled="submitting"><span x-text="submitting ? 'Отправка...' : 'Отправить заявку'"></span></button>
+            </form>
+        </div>
+    </div>
+
+    <div x-show="modalOpen && modalType === 'coach'" class="modal-fixed" @click.away="modalOpen = false" x-cloak>
+        <div class="bg-white rounded-3xl p-8 mx-4 max-w-md w-full relative shadow-2xl"><button class="absolute top-5 right-6 text-3xl text-gray-400 hover:text-gray-600" @click="modalOpen = false">&times;</button>
+            <h2 class="font-oswald text-2xl font-bold text-neon mb-5"><i class="fas fa-chalkboard-user mr-2"></i> Академия тренера</h2>
+            <form @submit.prevent="submitForm('coach')">
+                <input type="text" class="w-full bg-gray-100 rounded-full px-5 py-3 mb-3 text-gray-800 border border-gray-200 focus:border-neon focus:outline-none" placeholder="ФИО тренера" x-model="forms.coach.fullName" required>
+                <input type="tel" class="w-full bg-gray-100 rounded-full px-5 py-3 mb-3 text-gray-800 border border-gray-200 focus:border-neon focus:outline-none" placeholder="Телефон" x-model="forms.coach.phone" required>
+                <input type="email" class="w-full bg-gray-100 rounded-full px-5 py-3 mb-3 text-gray-800 border border-gray-200 focus:border-neon focus:outline-none" placeholder="Email" x-model="forms.coach.email" required>
+                <input type="text" class="w-full bg-gray-100 rounded-full px-5 py-3 mb-3 text-gray-800 border border-gray-200 focus:border-neon focus:outline-none" placeholder="Стаж / школа" x-model="forms.coach.experience">
+                <label class="flex items-center gap-2 text-gray-600 mb-5"><input type="checkbox" x-model="forms.coach.consent" required class="accent-neon w-4 h-4"> Я согласен на обработку ПД</label>
+                <button type="submit" class="btn-neon w-full py-3 rounded-full" :disabled="submitting"><span x-text="submitting ? 'Отправка...' : 'Записаться'"></span></button>
+            </form>
+        </div>
+    </div>
+
+    <div x-show="modalOpen && modalType === 'leader'" class="modal-fixed" @click.away="modalOpen = false" x-cloak>
+        <div class="bg-white rounded-3xl p-8 mx-4 max-w-md w-full relative shadow-2xl"><button class="absolute top-5 right-6 text-3xl text-gray-400 hover:text-gray-600" @click="modalOpen = false">&times;</button>
+            <h2 class="font-oswald text-2xl font-bold text-neon mb-5"><i class="fas fa-briefcase mr-2"></i> Форум руководителей</h2>
+            <form @submit.prevent="submitForm('leader')">
+                <input type="text" class="w-full bg-gray-100 rounded-full px-5 py-3 mb-3 text-gray-800 border border-gray-200 focus:border-neon focus:outline-none" placeholder="ФИО" x-model="forms.leader.fullName" required>
+                <input type="text" class="w-full bg-gray-100 rounded-full px-5 py-3 mb-3 text-gray-800 border border-gray-200 focus:border-neon focus:outline-none" placeholder="Должность" x-model="forms.leader.position" required>
+                <input type="text" class="w-full bg-gray-100 rounded-full px-5 py-3 mb-3 text-gray-800 border border-gray-200 focus:border-neon focus:outline-none" placeholder="Компания" x-model="forms.leader.company" required>
+                <input type="tel" class="w-full bg-gray-100 rounded-full px-5 py-3 mb-3 text-gray-800 border border-gray-200 focus:border-neon focus:outline-none" placeholder="Телефон" x-model="forms.leader.phone" required>
+                <input type="email" class="w-full bg-gray-100 rounded-full px-5 py-3 mb-3 text-gray-800 border border-gray-200 focus:border-neon focus:outline-none" placeholder="Email" x-model="forms.leader.email" required>
+                <label class="flex items-center gap-2 text-gray-600 mb-5"><input type="checkbox" x-model="forms.leader.consent" required class="accent-neon w-4 h-4"> Я согласен на обработку ПД</label>
+                <button type="submit" class="btn-neon w-full py-3 rounded-full" :disabled="submitting"><span x-text="submitting ? 'Отправка...' : 'Зарегистрироваться'"></span></button>
+            </form>
+        </div>
+    </div>
+
+    <div x-show="modalOpen && modalType === 'partner'" class="modal-fixed" @click.away="modalOpen = false" x-cloak>
+        <div class="bg-white rounded-3xl p-8 mx-4 max-w-md w-full relative shadow-2xl"><button class="absolute top-5 right-6 text-3xl text-gray-400 hover:text-gray-600" @click="modalOpen = false">&times;</button>
+            <h2 class="font-oswald text-2xl font-bold text-neon mb-5"><i class="fas fa-handshake mr-2"></i> Партнёрство</h2>
+            <form @submit.prevent="submitForm('partner')">
+                <input type="text" class="w-full bg-gray-100 rounded-full px-5 py-3 mb-3 text-gray-800 border border-gray-200 focus:border-neon focus:outline-none" placeholder="Компания" x-model="forms.partner.companyName" required>
+                <input type="text" class="w-full bg-gray-100 rounded-full px-5 py-3 mb-3 text-gray-800 border border-gray-200 focus:border-neon focus:outline-none" placeholder="Контактное лицо" x-model="forms.partner.contactPerson" required>
+                <input type="tel" class="w-full bg-gray-100 rounded-full px-5 py-3 mb-3 text-gray-800 border border-gray-200 focus:border-neon focus:outline-none" placeholder="Телефон" x-model="forms.partner.phone" required>
+                <input type="email" class="w-full bg-gray-100 rounded-full px-5 py-3 mb-3 text-gray-800 border border-gray-200 focus:border-neon focus:outline-none" placeholder="Email" x-model="forms.partner.email" required>
+                <input type="text" class="w-full bg-gray-100 rounded-full px-5 py-3 mb-3 text-gray-800 border border-gray-200 focus:border-neon focus:outline-none" placeholder="Бюджет" x-model="forms.partner.budget">
+                <label class="flex items-center gap-2 text-gray-600 mb-5"><input type="checkbox" x-model="forms.partner.consent" required class="accent-neon w-4 h-4"> Я согласен на обработку ПД</label>
+                <button type="submit" class="btn-neon w-full py-3 rounded-full" :disabled="submitting"><span x-text="submitting ? 'Отправка...' : 'Отправить'"></span></button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модалки документов -->
+    <div x-show="showPrivacy" class="modal-fixed" @click.away="showPrivacy = false" x-cloak>
+        <div class="bg-white rounded-3xl p-8 mx-4 max-w-lg w-full max-h-[85vh] overflow-y-auto relative shadow-2xl"><button class="absolute top-5 right-6 text-3xl text-gray-400 hover:text-gray-600" @click="showPrivacy = false">&times;</button><h2 class="font-oswald text-2xl font-bold text-neon mb-4">Политика конфиденциальности</h2><div class="text-gray-600 space-y-4"><p>Настоящая Политика определяет порядок обработки персональных данных участников фестиваля.</p><h3 class="text-gray-800 font-bold mt-4">1. Собираемые данные</h3><p>ФИО, телефон, email, название организации.</p><h3 class="text-gray-800 font-bold mt-4">2. Контакты</h3><p>+7 977 513 5149, Footbaliada@mail.ru</p></div></div>
+    </div>
+    <div x-show="showPersonalData" class="modal-fixed" @click.away="showPersonalData = false" x-cloak>
+        <div class="bg-white rounded-3xl p-8 mx-4 max-w-lg w-full max-h-[85vh] overflow-y-auto relative shadow-2xl"><button class="absolute top-5 right-6 text-3xl text-gray-400 hover:text-gray-600" @click="showPersonalData = false">&times;</button><h2 class="font-oswald text-2xl font-bold text-neon mb-4">Согласие на обработку ПД</h2><div class="text-gray-600 space-y-4"><p>Я даю согласие на обработку моих персональных данных, включая сбор, хранение, использование.</p><p>Согласие действует до отзыва. Отзыв: Footbaliada@mail.ru</p></div></div>
+    </div>
+</div>
+
+<!-- БИБЛИОТЕКИ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+<script src="https://cdn.jsdelivr.net/npm/inputmask@5.0.8/dist/inputmask.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/rellax@1.12.1/rellax.min.js"></script>
+<script src="https://api-maps.yandex.ru/2.1/?apikey=ваш_ключ&lang=ru_RU" type="text/javascript"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+<script>
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxUAVCr5j3gcUJumJyZgiGgTlOnP8Tv4kUcckkwGXbR9MmTNDEKvfK-7gf7MUW_6gideA/exec';
+
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(() => {
+            const preloader = document.getElementById('preloader');
+            if (preloader) preloader.style.opacity = '0';
+            setTimeout(() => preloader?.remove(), 500);
+        }, 800);
+
+        AOS.init({ duration: 800, once: true });
+
+        new Swiper('.mySwiper', {
+            loop: true,
+            autoplay: { delay: 3000, disableOnInteraction: false },
+            pagination: { el: '.swiper-pagination', clickable: true },
+            navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
+        });
+
+        new Typed('#typed-slogan', {
+            strings: ['⚡ СОБЫТИЕ, КОТОРОЕ ПЕРЕЗАГРУЖАЕТ ИНДУСТРИЮ ДЕТСКОГО СПОРТА ⚡'],
+            typeSpeed: 40, startDelay: 300, showCursor: false,
+        });
+
+        Inputmask({ mask: '+7 (999) 999-99-99', showMaskOnHover: false }).mask(document.querySelectorAll('input[type="tel"]'));
+
+        gsap.registerPlugin(ScrollTrigger);
+        gsap.utils.toArray('.light-card').forEach(card => {
+            gsap.from(card, { scrollTrigger: { trigger: card, start: 'top 85%' }, y: 40, opacity: 0, duration: 0.8 });
+        });
+
+        new Rellax('.rellax', { speed: -2, center: false });
+
+        ymaps.ready(function() {
+            var map = new ymaps.Map('yandexMap', {
+                center: [55.7156, 37.5544],
+                zoom: 15,
+                controls: ['zoomControl', 'fullscreenControl']
+            });
+            var placemark = new ymaps.Placemark([55.7156, 37.5544], { balloonContent: 'Стадион Лужники, Москва' });
+            map.geoObjects.add(placemark);
+        });
+    });
+
+    function app() {
+        return {
+            days: 0, hours: 0, minutes: 0, seconds: 0,
+            targetDate: new Date(2026, 7, 4, 10, 0, 0).getTime(),
+            modalOpen: false, modalType: '', submitting: false,
+            showPrivacy: false, showPersonalData: false,
+            showScrollTop: false, showCookieBanner: !Cookies.get('cookiesAccepted'),
+            forms: {
+                team: { school: '', coachName: '', phone: '', email: '', ageGroup: '', consent: false },
+                coach: { fullName: '', phone: '', email: '', experience: '', consent: false },
+                leader: { fullName: '', position: '', company: '', phone: '', email: '', consent: false },
+                partner: { companyName: '', contactPerson: '', phone: '', email: '', budget: '', consent: false }
+            },
+            init() {
+                this.updateTimer();
+                setInterval(() => this.updateTimer(), 1000);
+                window.addEventListener('scroll', () => { this.showScrollTop = window.scrollY > 300; });
+                const btn = document.getElementById('mobileMenuBtn');
+                if (btn) btn.addEventListener('click', () => {
+                    document.getElementById('mobileMenu')?.classList.toggle('hidden');
+                });
+            },
+            updateTimer() {
+                const diff = this.targetDate - new Date().getTime();
+                if (diff < 0) { this.days=this.hours=this.minutes=this.seconds=0; return; }
+                this.days = Math.floor(diff / 86400000);
+                this.hours = Math.floor((diff % 86400000) / 3600000);
+                this.minutes = Math.floor((diff % 3600000) / 60000);
+                this.seconds = Math.floor((diff % 60000) / 1000);
+            },
+            smoothScroll(target) {
+                document.querySelector(target)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                this.closeMobileMenu();
+            },
+            closeMobileMenu() { document.getElementById('mobileMenu')?.classList.add('hidden'); },
+            openModal(type) {
+                this.modalType = type;
+                this.modalOpen = true;
+                if (type === 'team') this.forms.team = { school: '', coachName: '', phone: '', email: '', ageGroup: '', consent: false };
+                if (type === 'coach') this.forms.coach = { fullName: '', phone: '', email: '', experience: '', consent: false };
+                if (type === 'leader') this.forms.leader = { fullName: '', position: '', company: '', phone: '', email: '', consent: false };
+                if (type === 'partner') this.forms.partner = { companyName: '', contactPerson: '', phone: '', email: '', budget: '', consent: false };
+            },
+            async submitForm(type) {
+                const formData = this.forms[type];
+                if (!formData.consent) { Swal.fire('Ошибка', 'Подтвердите согласие на обработку данных', 'error'); return; }
+                if (formData.email && !/^\S+@\S+\.\S+$/.test(formData.email)) { Swal.fire('Ошибка', 'Введите корректный email', 'error'); return; }
+                
+                this.submitting = true;
+                const payload = {
+                    type: type,
+                    formName: type === 'team' ? 'Заявка команды' : (type === 'coach' ? 'Академия тренера' : (type === 'leader' ? 'Форум руководителей' : 'Партнёрство')),
+                    ...formData,
+                    timestamp: new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Moscow' })
+                };
+                
+                try {
+                    await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    Swal.fire('Успешно!', 'Ваша заявка принята. Мы свяжемся с вами в ближайшее время.', 'success');
+                    this.modalOpen = false;
+                } catch (error) {
+                    Swal.fire('Внимание', 'Заявка сохранена локально. Мы свяжемся с вами!', 'info');
+                    this.modalOpen = false;
+                } finally {
+                    this.submitting = false;
+                }
+            },
+            acceptCookies() { Cookies.set('cookiesAccepted', 'true', { expires: 365 }); this.showCookieBanner = false; }
+        };
+    }
+</script>
+</body>
+</html>

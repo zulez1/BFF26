@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>TaskFlow</title>
+  <meta name="theme-color" content="#6366f1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="TaskFlow">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%236366f1'/><text y='82' x='18' font-size='72' fill='white'>✓</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    :root{
+      --bg:#f1f5f9;--surface:#fff;--surface2:#f8fafc;--border:#e2e8f0;
+      --accent:#6366f1;--accent-light:#eef2ff;--accent-dark:#4f46e5;
+      --green:#10b981;--green-light:#d1fae5;
+      --amber:#f59e0b;--amber-light:#fef3c7;
+      --red:#ef4444;--red-light:#fee2e2;
+      --t1:#1e293b;--t2:#475569;--t3:#94a3b8;
+      --nav-h:72px;--hdr-h:62px;
+      --r-sm:12px;--r-md:16px;--r-lg:24px;
+      --sh:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+      --sh-md:0 4px 16px rgba(0,0,0,.08);
+    }
+    html,body{height:100%;overflow-x:hidden}
+    body{background:var(--bg);font-family:'Inter',-apple-system,sans-serif;color:var(--t1)}
+    [x-cloak]{display:none!important}
+
+    /* ── HEADER ── */
+    .hdr{position:fixed;top:0;left:0;right:0;height:var(--hdr-h);background:var(--surface);
+      border-bottom:1px solid var(--border);display:flex;align-items:center;
+      padding:0 20px;z-index:100;gap:12px}
+    .hdr-logo{width:36px;height:36px;background:var(--accent);border-radius:10px;
+      display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;font-weight:900;flex-shrink:0}
+    .hdr-title{font-size:18px;font-weight:800;color:var(--t1);flex:1}
+    .hdr-date{font-size:13px;color:var(--t3);font-weight:500}
+
+    /* ── MAIN ── */
+    .main{margin-top:var(--hdr-h);margin-bottom:var(--nav-h);padding:20px 16px;
+      min-height:calc(100dvh - var(--hdr-h) - var(--nav-h))}
+
+    /* ── BOTTOM NAV ── */
+    .nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);background:var(--surface);
+      border-top:1px solid var(--border);display:flex;
+      padding-bottom:env(safe-area-inset-bottom);z-index:100}
+    .nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:3px;cursor:pointer;color:var(--t3);transition:color .2s;border:none;background:none;padding:8px 0}
+    .nav-btn.on{color:var(--accent)}
+    .nav-ico{font-size:22px;line-height:1}
+    .nav-lbl{font-size:11px;font-weight:600}
+
+    /* ── FAB ── */
+    .fab{position:fixed;bottom:calc(var(--nav-h) + 16px);right:20px;width:56px;height:56px;
+      border-radius:50%;background:var(--accent);color:#fff;font-size:30px;border:none;
+      cursor:pointer;box-shadow:0 4px 20px rgba(99,102,241,.45);display:flex;
+      align-items:center;justify-content:center;z-index:99;transition:all .2s;line-height:1}
+    .fab:hover{transform:scale(1.06);box-shadow:0 6px 28px rgba(99,102,241,.55)}
+    .fab:active{transform:scale(.94)}
+
+    /* ── CARD ── */
+    .card{background:var(--surface);border-radius:var(--r-lg);border:1px solid var(--border);overflow:hidden}
+
+    /* ── TASK ITEM ── */
+    .task-row{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;
+      border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s}
+    .task-row:last-child{border-bottom:none}
+    .task-row:active{background:var(--bg)}
+    .chk{width:24px;height:24px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;
+      margin-top:1px;display:flex;align-items:center;justify-content:center;
+      cursor:pointer;transition:all .2s;font-size:13px}
+    .chk.done{background:var(--green);border-color:var(--green);color:#fff}
+    .chk.prog{background:var(--amber);border-color:var(--amber);color:#fff}
+    .task-body{flex:1;min-width:0}
+    .task-ttl{font-size:15px;font-weight:500;color:var(--t1);line-height:1.4}
+    .task-ttl.crossed{text-decoration:line-through;color:var(--t3)}
+    .task-meta{display:flex;align-items:center;gap:6px;margin-top:5px;flex-wrap:wrap}
+    .badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:100px}
+    .b-todo{background:#f1f5f9;color:var(--t2)}
+    .b-prog{background:var(--amber-light);color:#92400e}
+    .b-done{background:var(--green-light);color:#065f46}
+    .b-high{background:var(--red-light);color:#991b1b}
+    .b-med{background:var(--amber-light);color:#92400e}
+    .b-low{background:#f0fdf4;color:#166534}
+    .task-time{font-size:11px;color:var(--t3);display:flex;align-items:center;gap:2px}
+    .task-time.late{color:var(--red)}
+    .tg-dot{width:16px;height:16px;background:#229ED9;border-radius:50%;color:#fff;
+      display:inline-flex;align-items:center;justify-content:center;font-size:9px}
+    .arrow{color:var(--t3);font-size:18px;margin-left:4px}
+
+    /* ── SECTION HEADER ── */
+    .sec-hdr{font-size:15px;font-weight:700;margin-bottom:10px;
+      display:flex;align-items:center;justify-content:space-between;color:var(--t1)}
+    .sec-count{font-size:13px;color:var(--t3);font-weight:500}
+
+    /* ── PROGRESS BAR ── */
+    .prog-bar{height:8px;background:var(--border);border-radius:100px;overflow:hidden}
+    .prog-fill{height:100%;background:var(--green);border-radius:100px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+    .prog-fill.accent{background:var(--accent)}
+
+    /* ── STATS ── */
+    .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+    .stat-card{background:var(--surface);border-radius:var(--r-md);padding:16px;border:1px solid var(--border)}
+    .stat-val{font-size:30px;font-weight:900;color:var(--t1);line-height:1}
+    .stat-lbl{font-size:12px;color:var(--t3);font-weight:500;margin-top:4px}
+    .streak-chip{display:inline-flex;align-items:center;gap:6px;background:#fff7ed;
+      color:#c2410c;padding:6px 14px;border-radius:100px;font-size:14px;font-weight:700;
+      border:1px solid #fed7aa}
+
+    /* ── BAR CHART ── */
+    .bar-chart{display:flex;align-items:flex-end;gap:6px;height:96px}
+    .bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end}
+    .bar{width:100%;border-radius:6px 6px 0 0;min-height:4px;transition:height .4s cubic-bezier(.4,0,.2,1);background:var(--accent-light)}
+    .bar.today{background:var(--accent)}
+    .bar-cnt{font-size:11px;font-weight:700;color:var(--t2);min-height:14px}
+    .bar-lbl{font-size:11px;color:var(--t3);font-weight:600}
+
+    /* ── WEEK STRIP ── */
+    .week-strip{display:flex;gap:8px;margin-bottom:20px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+    .week-strip::-webkit-scrollbar{display:none}
+    .day-cell{flex:0 0 auto;width:50px;padding:10px 6px;border-radius:14px;text-align:center;
+      cursor:pointer;border:1.5px solid var(--border);background:var(--surface);transition:all .18s}
+    .day-cell.today{border-color:var(--accent)}
+    .day-cell.sel{background:var(--accent);border-color:var(--accent);color:#fff}
+    .day-dname{font-size:10px;font-weight:700;text-transform:uppercase;opacity:.6;letter-spacing:.3px}
+    .day-num{font-size:19px;font-weight:800;margin:2px 0}
+    .day-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);margin:3px auto 0}
+    .day-cell.sel .day-dname,.day-cell.sel .day-num{opacity:1;color:#fff}
+    .day-cell.sel .day-dot{background:rgba(255,255,255,.5)}
+
+    /* ── MODAL SHEET ── */
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(5px);
+      z-index:200;display:flex;align-items:flex-end}
+    .sheet{background:var(--surface);border-radius:var(--r-lg) var(--r-lg) 0 0;
+      width:100%;max-height:94dvh;overflow-y:auto;padding:0 20px 40px}
+    .sheet-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:12px auto 20px}
+    .modal-ttl{font-size:18px;font-weight:800}
+
+    /* ── FORM ── */
+    .fgroup{margin-bottom:14px}
+    .flabel{font-size:13px;font-weight:600;color:var(--t2);margin-bottom:6px;display:block}
+    .finput{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:12px;
+      font-size:15px;font-family:inherit;color:var(--t1);background:var(--surface);
+      outline:none;transition:border-color .18s;-webkit-appearance:none}
+    .finput:focus{border-color:var(--accent)}
+    textarea.finput{resize:none;min-height:76px}
+    .frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .seg{display:flex;background:var(--bg);border-radius:10px;padding:3px;gap:2px}
+    .seg-btn{flex:1;padding:8px 4px;font-size:12px;font-weight:600;border:none;border-radius:8px;
+      cursor:pointer;background:none;color:var(--t3);transition:all .18s;font-family:inherit}
+    .seg-btn.on{background:#fff;color:var(--t1);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+    .chips{display:flex;gap:8px;flex-wrap:wrap}
+    .chip{padding:7px 14px;border-radius:100px;font-size:13px;font-weight:600;
+      border:1.5px solid var(--border);background:var(--surface);cursor:pointer;
+      transition:all .15s;color:var(--t2)}
+    .chip.on{border-color:var(--accent);background:var(--accent-light);color:var(--accent)}
+
+    /* ── TOGGLE ── */
+    .tog{width:48px;height:28px;background:var(--border);border-radius:100px;
+      position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;border:none}
+    .tog.on{background:var(--accent)}
+    .tog-dot{position:absolute;width:22px;height:22px;background:#fff;border-radius:50%;
+      top:3px;left:3px;transition:left .18s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+    .tog.on .tog-dot{left:23px}
+
+    /* ── BUTTONS ── */
+    .btn-primary{width:100%;padding:15px;background:var(--accent);color:#fff;font-size:15px;
+      font-weight:700;border:none;border-radius:14px;cursor:pointer;transition:all .18s;
+      font-family:inherit}
+    .btn-primary:active{transform:scale(.98);background:var(--accent-dark)}
+    .btn-danger{background:var(--red-light);color:var(--red);border:none;
+      padding:8px 14px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+    .btn-link{background:none;border:none;color:var(--accent);font-size:13px;font-weight:700;
+      cursor:pointer;font-family:inherit;padding:4px 0}
+
+    /* ── SETTINGS ROW ── */
+    .srow{display:flex;align-items:center;padding:14px 0;border-bottom:1px solid var(--border);gap:12px}
+    .srow:last-child{border-bottom:none}
+    .sico{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;
+      justify-content:center;font-size:18px;flex-shrink:0}
+
+    /* ── EMPTY STATE ── */
+    .empty{text-align:center;padding:48px 24px;color:var(--t3)}
+    .empty-ico{font-size:48px;margin-bottom:12px}
+    .empty-ttl{font-size:15px;font-weight:700;color:var(--t2)}
+    .empty-sub{font-size:13px;margin-top:4px;line-height:1.5}
+
+    /* ── TODAY HERO ── */
+    .hero-card{background:var(--accent);border-radius:var(--r-lg);padding:20px;
+      margin-bottom:16px;color:#fff;position:relative;overflow:hidden}
+    .hero-bg{position:absolute;right:-20px;top:-20px;font-size:100px;opacity:.1;line-height:1}
+    .hero-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;opacity:.8}
+    .hero-count{font-size:36px;font-weight:900;margin:4px 0 12px;line-height:1}
+    .hero-sub{font-size:14px;opacity:.85}
+    .hero-prog{height:6px;background:rgba(255,255,255,.25);border-radius:100px;margin-top:12px;overflow:hidden}
+    .hero-fill{height:100%;background:#fff;border-radius:100px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+
+    /* ── TOAST ── */
+    .toast{position:fixed;bottom:calc(var(--nav-h) + 82px);left:50%;transform:translateX(-50%);
+      background:var(--t1);color:#fff;padding:11px 22px;border-radius:100px;
+      font-size:14px;font-weight:600;z-index:400;white-space:nowrap;box-shadow:var(--sh-md);
+      pointer-events:none}
+
+    /* ── WEEK NAV ── */
+    .week-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+    .week-nav-btn{border:none;background:var(--surface);border-radius:10px;
+      border:1px solid var(--border);width:36px;height:36px;font-size:20px;cursor:pointer;
+      display:flex;align-items:center;justify-content:center;color:var(--t2);transition:all .15s}
+    .week-nav-btn:active{background:var(--bg)}
+    .week-nav-ttl{font-size:15px;font-weight:700}
+
+    /* ── ANIMATIONS ── */
+    @keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+    .anim-up{animation:slideUp .28s cubic-bezier(.2,0,0,1)}
+    .anim-fade{animation:fadeIn .22s ease}
+
+    /* ── TABLE VIEW ── */
+    .tbl{width:100%;border-collapse:collapse;font-size:13px}
+    .tbl th{text-align:left;padding:10px 12px;background:var(--bg);color:var(--t3);
+      font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;position:sticky;top:0}
+    .tbl th:first-child{border-radius:var(--r-sm) 0 0 var(--r-sm)}
+    .tbl th:last-child{border-radius:0 var(--r-sm) var(--r-sm) 0}
+    .tbl td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+    .tbl tr:last-child td{border-bottom:none}
+    .tbl tr:hover td{background:var(--bg)}
+
+    /* ── IMPORT ── */
+    .import-area{border:2px dashed var(--border);border-radius:var(--r-md);padding:24px;
+      text-align:center;color:var(--t3);cursor:pointer;transition:border-color .2s}
+    .import-area:hover{border-color:var(--accent)}
+  </style>
+</head>
+<body>
+<div x-data="app()" x-init="init()" x-cloak>
+
+  <!-- HEADER -->
+  <header class="hdr">
+    <div class="hdr-logo">✓</div>
+    <div class="hdr-title">TaskFlow</div>
+    <div class="hdr-date" x-text="todayLabel"></div>
+  </header>
+
+  <!-- FAB -->
+  <button class="fab" @click="openAdd()" title="Новая задача">+</button>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- ═══ TODAY ═══ -->
+    <div x-show="tab==='today'" class="anim-fade">
+
+      <!-- Hero progress card -->
+      <div class="hero-card">
+        <div class="hero-bg">📋</div>
+        <div style="position:relative;z-index:1">
+          <div class="hero-label">Сегодня</div>
+          <div class="hero-count" x-text="todayDone+'/'+todayTotal+' задач'"></div>
+          <div class="hero-sub" x-text="todayTotal===0 ? 'Добавьте первую задачу' : todayDone===todayTotal && todayTotal>0 ? '🎉 Все выполнено!' : 'Продолжайте в том же духе!'"></div>
+          <div class="hero-prog">
+            <div class="hero-fill" :style="'width:'+todayPct+'%'"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- In progress -->
+      <template x-if="todayByStatus.prog.length>0">
+        <div style="margin-bottom:16px">
+          <div class="sec-hdr"><span>🔥 В процессе</span><span class="sec-count" x-text="todayByStatus.prog.length"></span></div>
+          <div class="card">
+            <template x-for="t in todayByStatus.prog" :key="t.id">
+              <div class="task-row" @click="openEdit(t)">
+                <div class="chk prog" @click.stop="cycleStatus(t)">→</div>
+                <div class="task-body">
+                  <div class="task-ttl" x-text="t.title"></div>
+                  <div class="task-meta">
+                    <span class="badge b-med" x-text="prioLabel(t.priority)"></span>
+                    <template x-if="t.time"><span class="task-time" :class="isLate(t)?'late':''">🕐 <span x-text="t.time"></span></span></template>
+                    <template x-if="t.tg&&settings.tgToken"><span class="tg-dot">✈</span></template>
+                  </div>
+                </div>
+                <span class="arrow">›</span>
+              </div>
+            </template>
+          </div>
+        </div>
+      </template>
+
+      <!-- Todo -->
+      <template x-if="todayByStatus.todo.length>0">
+        <div style="margin-bottom:16px">
+          <div class="sec-hdr"><span>📋 Запланировано</span><span class="sec-count" x-text="todayByStatus.todo.length"></span></div>
+          <div class="card">
+            <template x-for="t in todayByStatus.todo" :key="t.id">
+              <div class="task-row" @click="openEdit(t)">
+                <div class="chk" @click.stop="cycleStatus(t)"></div>
+                <div class="task-body">
+                  <div class="task-ttl" x-text="t.title"></div>
+                  <div class="task-meta">
+                    <span class="badge" :class="'b-'+t.priority" x-text="prioLabel(t.priority)"></span>
+                    <template x-if="t.time"><span class="task-time" :class="isLate(t)?'late':''">🕐 <span x-text="t.time"></span></span></template>
+                    <template x-if="t.tg&&settings.tgToken"><span class="tg-dot">✈</span></template>
+                  </div>
+                </div>
+                <span class="arrow">›</span>
+              </div>
+            </template>
+          </div>
+        </div>
+      </template>
+
+      <!-- Done -->
+      <template x-if="todayByStatus.done.length>0">
+        <div style="margin-bottom:16px">
+          <div class="sec-hdr"><span>✅ Выполнено</span><span class="sec-count" x-text="todayByStatus.done.length"></span></div>
+          <div class="card">
+            <template x-for="t in todayByStatus.done" :key="t.id">
+              <div class="task-row" @click="openEdit(t)">
+                <div class="chk done" @click.stop="cycleStatus(t)">✓</div>
+                <div class="task-body">
+                  <div class="task-ttl crossed" x-text="t.title"></div>
+                </div>
+                <span class="arrow">›</span>
+              </div>
+            </template>
+          </div>
+        </div>
+      </template>
+
+      <!-- Empty -->
+      <template x-if="todayTotal===0">
+        <div class="empty">
+          <div class="empty-ico">🌟</div>
+          <div class="empty-ttl">Задач на сегодня нет</div>
+          <div class="empty-sub">Нажмите + чтобы добавить задачу</div>
+        </div>
+      </template>
+    </div>
+
+    <!-- ═══ WEEK ═══ -->
+    <div x-show="tab==='week'" class="anim-fade">
+
+      <div class="week-nav">
+        <button class="week-nav-btn" @click="weekPrev()">‹</button>
+        <div class="week-nav-ttl" x-text="weekLabel"></div>
+        <button class="week-nav-btn" @click="weekNext()">›</button>
+      </div>
+
+      <!-- Day strip -->
+      <div class="week-strip">
+        <template x-for="d in weekDays" :key="d.ds">
+          <div class="day-cell" :class="{today:d.isToday,sel:d.ds===selDay}" @click="selDay=d.ds">
+            <div class="day-dname" x-text="d.name"></div>
+            <div class="day-num" x-text="d.num"></div>
+            <div class="day-dot" x-show="d.count>0"></div>
+          </div>
+        </template>
+      </div>
+
+      <!-- View switcher -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="sec-hdr" style="margin:0" x-text="selDayLabel"></div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn-link" @click="openAddForDay(selDay)">+ Добавить</button>
+          <button @click="weekView=weekView==='list'?'table':'list'"
+            style="border:1px solid var(--border);background:var(--surface);border-radius:8px;padding:5px 10px;font-size:13px;font-weight:600;cursor:pointer;color:var(--t2)">
+            <span x-text="weekView==='list'?'📊 Таблица':'📋 Список'"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- List view -->
+      <template x-if="weekView==='list'">
+        <div>
+          <template x-if="selDayTasks.length>0">
+            <div class="card">
+              <template x-for="t in selDayTasks" :key="t.id">
+                <div class="task-row" @click="openEdit(t)">
+                  <div class="chk" :class="t.status==='done'?'done':t.status==='inprogress'?'prog':''"
+                       @click.stop="cycleStatus(t)">
+                    <span x-text="t.status==='done'?'✓':t.status==='inprogress'?'→':''"></span>
+                  </div>
+                  <div class="task-body">
+                    <div class="task-ttl" :class="t.status==='done'?'crossed':''" x-text="t.title"></div>
+                    <div class="task-meta">
+                      <span class="badge" :class="'b-'+t.status" x-text="statusLabel(t.status)"></span>
+                      <span class="badge" :class="'b-'+t.priority" x-text="prioLabel(t.priority)"></span>
+                      <template x-if="t.time"><span class="task-time">🕐 <span x-text="t.time"></span></span></template>
+                    </div>
+                  </div>
+                  <span class="arrow">›</span>
+                </div>
+              </template>
+            </div>
+          </template>
+          <template x-if="selDayTasks.length===0">
+            <div class="empty" style="padding:32px 24px">
+              <div class="empty-ico" style="font-size:36px">📅</div>
+              <div class="empty-ttl">Нет задач на этот день</div>
+            </div>
+          </template>
+        </div>
+      </template>
+
+      <!-- Table view -->
+      <template x-if="weekView==='table'">
+        <div class="card" style="overflow-x:auto">
+          <template x-if="selDayTasks.length>0">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th>Задача</th>
+                  <th>Статус</th>
+                  <th>Приоритет</th>
+                  <th>Время</th>
+                </tr>
+              </thead>
+              <tbody>
+                <template x-for="t in selDayTasks" :key="t.id">
+                  <tr @click="openEdit(t)" style="cursor:pointer">
+                    <td>
+                      <span :style="t.status==='done'?'text-decoration:line-through;color:var(--t3)':''" x-text="t.title"></span>
+                    </td>
+                    <td><span class="badge" :class="'b-'+t.status" x-text="statusLabel(t.status)"></span></td>
+                    <td><span class="badge" :class="'b-'+t.priority" x-text="prioLabel(t.priority)"></span></td>
+                    <td style="color:var(--t3)" x-text="t.time||'—'"></td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </template>
+          <template x-if="selDayTasks.length===0">
+            <div style="padding:24px;text-align:center;color:var(--t3);font-size:14px">Нет задач</div>
+          </template>
+        </div>
+      </template>
+    </div>
+
+    <!-- ═══ STATS ═══ -->
+    <div x-show="tab==='stats'" class="anim-fade">
+      <div style="font-size:20px;font-weight:900;margin-bottom:16px">Статистика</div>
+
+      <template x-if="streak>0">
+        <div style="margin-bottom:16px">
+          <span class="streak-chip">🔥 <span x-text="streak+' дн. подряд'"></span></span>
+        </div>
+      </template>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-val" x-text="wStats.done"></div>
+          <div class="stat-lbl">Выполнено за неделю</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" style="color:var(--green)" x-text="wStats.rate+'%'"></div>
+          <div class="stat-lbl">Процент выполнения</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" x-text="wStats.total"></div>
+          <div class="stat-lbl">Всего за неделю</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" x-text="wStats.avgPerDay"></div>
+          <div class="stat-lbl">В среднем в день</div>
+        </div>
+      </div>
+
+      <!-- Bar chart -->
+      <div class="card" style="padding:16px;margin-bottom:16px">
+        <div style="font-size:13px;font-weight:700;color:var(--t2);margin-bottom:14px">Выполнено по дням</div>
+        <div class="bar-chart">
+          <template x-for="d in chartData" :key="d.lbl">
+            <div class="bar-col">
+              <div class="bar-cnt" x-text="d.done>0?d.done:''"></div>
+              <div class="bar" :class="d.isToday?'today':''" :style="'height:'+d.h+'px'"></div>
+              <div class="bar-lbl" x-text="d.lbl"></div>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <!-- Priority breakdown -->
+      <div class="card" style="padding:16px;margin-bottom:16px">
+        <div style="font-size:13px;font-weight:700;color:var(--t2);margin-bottom:14px">По приоритету (эта неделя)</div>
+        <template x-for="p in prioStats" :key="p.key">
+          <div style="margin-bottom:12px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+              <span style="font-size:13px;font-weight:600;color:var(--t2)" x-text="p.label"></span>
+              <span style="font-size:13px;color:var(--t3)" x-text="p.done+'/'+p.total"></span>
+            </div>
+            <div class="prog-bar">
+              <div class="prog-fill" :style="'width:'+(p.total>0?Math.round(p.done/p.total*100):0)+'%;background:'+p.color"></div>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- All time -->
+      <div class="card" style="padding:16px">
+        <div style="font-size:13px;font-weight:700;color:var(--t2);margin-bottom:12px">За всё время</div>
+        <div style="display:flex;justify-content:space-between">
+          <div style="text-align:center">
+            <div style="font-size:22px;font-weight:900;color:var(--t1)" x-text="allStats.total"></div>
+            <div style="font-size:12px;color:var(--t3);margin-top:2px">Всего задач</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:22px;font-weight:900;color:var(--green)" x-text="allStats.done"></div>
+            <div style="font-size:12px;color:var(--t3);margin-top:2px">Выполнено</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:22px;font-weight:900;color:var(--amber)" x-text="allStats.prog"></div>
+            <div style="font-size:12px;color:var(--t3);margin-top:2px">В процессе</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:22px;font-weight:900;color:var(--red)" x-text="allStats.late"></div>
+            <div style="font-size:12px;color:var(--t3);margin-top:2px">Просрочено</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SETTINGS ═══ -->
+    <div x-show="tab==='settings'" class="anim-fade">
+      <div style="font-size:20px;font-weight:900;margin-bottom:20px">Настройки</div>
+
+      <!-- Telegram -->
+      <div class="card" style="padding:16px;margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+          <div style="width:40px;height:40px;background:#229ED9;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px">✈</div>
+          <div>
+            <div style="font-size:16px;font-weight:800">Telegram</div>
+            <div style="font-size:12px;color:var(--t3)">Уведомления о дедлайнах</div>
+          </div>
+        </div>
+
+        <div class="fgroup">
+          <label class="flabel">Bot Token</label>
+          <input class="finput" type="text" x-model="settings.tgToken" placeholder="123456:ABCdef..." @change="saveSettings()">
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Chat ID</label>
+          <input class="finput" type="text" x-model="settings.tgChatId" placeholder="-100xxxxxxxxxx или ваш ID" @change="saveSettings()">
+        </div>
+
+        <div style="background:var(--bg);border-radius:12px;padding:12px;margin-bottom:14px;font-size:12px;color:var(--t2);line-height:1.7">
+          1. Создайте бота через <b>@BotFather</b> → получите токен<br>
+          2. Узнайте свой Chat ID через <b>@userinfobot</b><br>
+          3. Напишите боту любое сообщение, затем нажмите «Проверить»
+        </div>
+
+        <button class="btn-primary" style="padding:12px;font-size:14px" @click="testTg()">
+          Проверить соединение
+        </button>
+      </div>
+
+      <!-- Notification settings -->
+      <div class="card" style="padding:0 16px;margin-bottom:16px">
+        <div class="srow">
+          <div class="sico" style="background:var(--accent-light)">🔔</div>
+          <div style="flex:1">
+            <div style="font-size:15px;font-weight:600">Напоминания</div>
+            <div style="font-size:12px;color:var(--t3)">За 30 минут до дедлайна</div>
+          </div>
+          <button class="tog" :class="settings.remind?'on':''" @click="settings.remind=!settings.remind;saveSettings()">
+            <div class="tog-dot"></div>
+          </button>
+        </div>
+        <div class="srow" style="border-bottom:none">
+          <div class="sico" style="background:var(--green-light)">📊</div>
+          <div style="flex:1">
+            <div style="font-size:15px;font-weight:600">Итоги дня</div>
+            <div style="font-size:12px;color:var(--t3)">Отчёт в Telegram в 21:00</div>
+          </div>
+          <button class="tog" :class="settings.dailyReport?'on':''" @click="settings.dailyReport=!settings.dailyReport;saveSettings()">
+            <div class="tog-dot"></div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Data -->
+      <div class="card" style="padding:0 16px;margin-bottom:16px">
+        <div class="srow">
+          <div class="sico" style="background:#fef3c7">📤</div>
+          <div style="flex:1">
+            <div style="font-size:15px;font-weight:600">Экспорт задач</div>
+            <div style="font-size:12px;color:var(--t3)">Скачать как JSON</div>
+          </div>
+          <button @click="exportJSON()" style="border:none;background:none;color:var(--accent);font-size:20px;cursor:pointer">↓</button>
+        </div>
+        <div class="srow">
+          <div class="sico" style="background:#f0fdf4">📥</div>
+          <div style="flex:1">
+            <div style="font-size:15px;font-weight:600">Импорт из CSV</div>
+            <div style="font-size:12px;color:var(--t3)">Загрузить задачи из Excel/CSV</div>
+          </div>
+          <label style="border:none;background:none;color:var(--accent);font-size:20px;cursor:pointer">
+            ↑<input type="file" accept=".csv" @change="importCSV($event)" style="display:none">
+          </label>
+        </div>
+        <div class="srow" style="border-bottom:none">
+          <div class="sico" style="background:var(--red-light)">🗑</div>
+          <div style="flex:1">
+            <div style="font-size:15px;font-weight:600">Очистить выполненные</div>
+            <div style="font-size:12px;color:var(--t3)">Удалить все завершённые задачи</div>
+          </div>
+          <button @click="clearDone()" style="border:none;background:none;color:var(--red);font-size:20px;cursor:pointer">→</button>
+        </div>
+      </div>
+
+      <div style="text-align:center;margin-top:20px;color:var(--t3);font-size:12px;line-height:1.8">
+        TaskFlow v1.0<br>Данные хранятся локально на устройстве
+      </div>
+    </div>
+
+  </main>
+
+  <!-- BOTTOM NAV -->
+  <nav class="nav">
+    <button class="nav-btn" :class="tab==='today'?'on':''" @click="tab='today'">
+      <span class="nav-ico">☀️</span><span class="nav-lbl">Сегодня</span>
+    </button>
+    <button class="nav-btn" :class="tab==='week'?'on':''" @click="tab='week'">
+      <span class="nav-ico">📅</span><span class="nav-lbl">Неделя</span>
+    </button>
+    <button class="nav-btn" :class="tab==='stats'?'on':''" @click="tab='stats'">
+      <span class="nav-ico">📊</span><span class="nav-lbl">Статистика</span>
+    </button>
+    <button class="nav-btn" :class="tab==='settings'?'on':''" @click="tab='settings'">
+      <span class="nav-ico">⚙️</span><span class="nav-lbl">Настройки</span>
+    </button>
+  </nav>
+
+  <!-- TASK MODAL -->
+  <template x-if="showModal">
+    <div class="overlay" @click.self="closeModal()">
+      <div class="sheet anim-up">
+        <div class="sheet-handle"></div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+          <div class="modal-ttl" x-text="editTask?'Редактировать':'Новая задача'"></div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <template x-if="editTask">
+              <button class="btn-danger" @click="delTask()">Удалить</button>
+            </template>
+            <button @click="closeModal()" style="border:none;background:none;font-size:26px;cursor:pointer;color:var(--t3);line-height:1;padding:0 4px">×</button>
+          </div>
+        </div>
+
+        <div class="fgroup">
+          <label class="flabel">Название *</label>
+          <input class="finput" type="text" x-model="form.title" placeholder="Что нужно сделать?" x-ref="titleInput">
+        </div>
+
+        <div class="fgroup">
+          <label class="flabel">Описание</label>
+          <textarea class="finput" x-model="form.desc" placeholder="Детали, заметки..."></textarea>
+        </div>
+
+        <div class="frow" style="margin-bottom:14px">
+          <div>
+            <label class="flabel">Дата</label>
+            <input class="finput" type="date" x-model="form.date">
+          </div>
+          <div>
+            <label class="flabel">Время (дедлайн)</label>
+            <input class="finput" type="time" x-model="form.time">
+          </div>
+        </div>
+
+        <div class="fgroup">
+          <label class="flabel">Приоритет</label>
+          <div class="chips">
+            <div class="chip" :class="form.priority==='low'?'on':''" @click="form.priority='low'">🟢 Низкий</div>
+            <div class="chip" :class="form.priority==='medium'?'on':''" @click="form.priority='medium'">🟡 Средний</div>
+            <div class="chip" :class="form.priority==='high'?'on':''" @click="form.priority='high'">🔴 Высокий</div>
+          </div>
+        </div>
+
+        <template x-if="editTask">
+          <div class="fgroup">
+            <label class="flabel">Статус</label>
+            <div class="seg">
+              <button class="seg-btn" :class="form.status==='todo'?'on':''" @click="form.status='todo'">Не начато</button>
+              <button class="seg-btn" :class="form.status==='inprogress'?'on':''" @click="form.status='inprogress'">В процессе</button>
+              <button class="seg-btn" :class="form.status==='done'?'on':''" @click="form.status='done'">Готово</button>
+            </div>
+          </div>
+        </template>
+
+        <template x-if="settings.tgToken">
+          <div style="display:flex;align-items:center;justify-content:space-between;
+               padding:12px 0;border-top:1px solid var(--border);margin-top:4px;margin-bottom:16px">
+            <div>
+              <div style="font-size:14px;font-weight:600">Напомнить в Telegram</div>
+              <div style="font-size:12px;color:var(--t3)">За 30 мин до дедлайна</div>
+            </div>
+            <button class="tog" :class="form.tg?'on':''" @click="form.tg=!form.tg">
+              <div class="tog-dot"></div>
+            </button>
+          </div>
+        </template>
+
+        <button class="btn-primary" @click="saveTask()" style="margin-top:8px">
+          <span x-text="editTask?'Сохранить изменения':'Создать задачу'"></span>
+        </button>
+      </div>
+    </div>
+  </template>
+
+  <!-- TOAST -->
+  <template x-if="toastMsg">
+    <div class="toast anim-fade" x-text="toastMsg"></div>
+  </template>
+
+</div>
+
+<script>
+function app() {
+  return {
+    tab: 'today',
+    tasks: [],
+    settings: { tgToken:'', tgChatId:'', remind:true, dailyReport:false },
+    showModal: false,
+    editTask: null,
+    form: {},
+    selDay: '',
+    weekOff: 0,
+    weekView: 'list',
+    toastMsg: '',
+    _toastTimer: null,
+    _notified: new Set(),
+
+    init() {
+      this.load();
+      this.selDay = this.todayStr();
+      if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+      setInterval(() => this.checkDeadlines(), 60000);
+      setInterval(() => this.checkDailyReport(), 60000);
+    },
+
+    todayStr() {
+      return new Date().toISOString().split('T')[0];
+    },
+
+    get todayLabel() {
+      const d = new Date();
+      const dn = ['вс','пн','вт','ср','чт','пт','сб'];
+      const mn = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+      return `${dn[d.getDay()]}, ${d.getDate()} ${mn[d.getMonth()]}`;
+    },
+
+    get todayTasks() { return this.tasks.filter(t => t.date === this.todayStr()); },
+    get todayTotal() { return this.todayTasks.length; },
+    get todayDone()  { return this.todayTasks.filter(t => t.status==='done').length; },
+    get todayPct()   { return this.todayTotal>0 ? Math.round(this.todayDone/this.todayTotal*100) : 0; },
+
+    get todayByStatus() {
+      const byPrio = (a,b) => ({high:3,medium:2,low:1}[b.priority]||0) - ({high:3,medium:2,low:1}[a.priority]||0);
+      return {
+        todo: this.todayTasks.filter(t=>t.status==='todo').sort(byPrio),
+        prog: this.todayTasks.filter(t=>t.status==='inprogress'),
+        done: this.todayTasks.filter(t=>t.status==='done'),
+      };
+    },
+
+    prioLabel(p) { return {high:'Высокий',medium:'Средний',low:'Низкий'}[p]||p; },
+    statusLabel(s) { return {todo:'Не начато',inprogress:'В процессе',done:'Готово'}[s]||s; },
+
+    isLate(t) {
+      if (!t.time || t.status==='done') return false;
+      const [h,m] = t.time.split(':').map(Number);
+      const dl = new Date(t.date+'T00:00:00');
+      dl.setHours(h,m,0,0);
+      return dl < new Date();
+    },
+
+    // ── WEEK ──
+    get weekStart() {
+      const d = new Date();
+      d.setDate(d.getDate() + this.weekOff*7);
+      const day = d.getDay();
+      d.setDate(d.getDate() - (day===0?6:day-1));
+      d.setHours(0,0,0,0);
+      return d;
+    },
+
+    get weekDays() {
+      const dn = ['пн','вт','ср','чт','пт','сб','вс'];
+      const today = this.todayStr();
+      return Array.from({length:7}, (_,i) => {
+        const d = new Date(this.weekStart);
+        d.setDate(d.getDate()+i);
+        const ds = d.toISOString().split('T')[0];
+        return { name:dn[i], num:d.getDate(), ds, isToday:ds===today,
+                 count:this.tasks.filter(t=>t.date===ds).length };
+      });
+    },
+
+    get weekLabel() {
+      const s = this.weekStart, e = new Date(s);
+      e.setDate(e.getDate()+6);
+      const mn = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+      return `${s.getDate()} ${mn[s.getMonth()]} — ${e.getDate()} ${mn[e.getMonth()]}`;
+    },
+
+    get selDayLabel() {
+      if (!this.selDay) return '';
+      if (this.selDay === this.todayStr()) return 'Сегодня';
+      const d = new Date(this.selDay+'T00:00:00');
+      const dn = ['Воскресенье','Понедельник','Вторник','Среда','Четверг','Пятница','Суббота'];
+      const mn = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+      return `${dn[d.getDay()]}, ${d.getDate()} ${mn[d.getMonth()]}`;
+    },
+
+    get selDayTasks() {
+      const ord = {inprogress:0,todo:1,done:2};
+      return this.tasks.filter(t=>t.date===this.selDay)
+        .sort((a,b)=>ord[a.status]-ord[b.status]);
+    },
+
+    weekPrev() { this.weekOff--; if(this.weekDays.length) this.selDay=this.weekDays[0].ds; },
+    weekNext() { this.weekOff++; if(this.weekDays.length) this.selDay=this.weekDays[0].ds; },
+
+    // ── STATS ──
+    get wTasks() {
+      const ds = new Set(this.weekDays.map(d=>d.ds));
+      return this.tasks.filter(t=>ds.has(t.date));
+    },
+
+    get wStats() {
+      const t=this.wTasks, done=t.filter(x=>x.status==='done').length, total=t.length;
+      return { done, total, rate:total>0?Math.round(done/total*100):0,
+               avgPerDay:(total/7).toFixed(1) };
+    },
+
+    get chartData() {
+      const today = this.todayStr();
+      const counts = this.weekDays.map(d=>({
+        lbl:d.name, isToday:d.ds===today,
+        done:this.tasks.filter(t=>t.date===d.ds&&t.status==='done').length,
+        total:this.tasks.filter(t=>t.date===d.ds).length,
+      }));
+      const max = Math.max(1,...counts.map(c=>c.total));
+      return counts.map(c=>({...c, h:Math.max(4,Math.round(c.total/max*80))}));
+    },
+
+    get prioStats() {
+      const t = this.wTasks;
+      const ps = (k,label,color) => {
+        const f=t.filter(x=>x.priority===k);
+        return {key:k,label,color,total:f.length,done:f.filter(x=>x.status==='done').length};
+      };
+      return [ps('high','🔴 Высокий','#ef4444'),ps('medium','🟡 Средний','#f59e0b'),ps('low','🟢 Низкий','#10b981')];
+    },
+
+    get allStats() {
+      const today = this.todayStr();
+      return {
+        total: this.tasks.length,
+        done:  this.tasks.filter(t=>t.status==='done').length,
+        prog:  this.tasks.filter(t=>t.status==='inprogress').length,
+        late:  this.tasks.filter(t=>t.status!=='done'&&t.time&&t.date<today).length,
+      };
+    },
+
+    get streak() {
+      let n=0;
+      const d=new Date();
+      for(let i=0;i<365;i++){
+        const ds=d.toISOString().split('T')[0];
+        const dt=this.tasks.filter(t=>t.date===ds);
+        if(!dt.length||!dt.every(t=>t.status==='done')) break;
+        n++;
+        d.setDate(d.getDate()-1);
+      }
+      return n;
+    },
+
+    // ── TASK CRUD ──
+    cycleStatus(t) {
+      const c={todo:'inprogress',inprogress:'done',done:'todo'};
+      t.status=c[t.status]||'todo';
+      if(t.status==='done') t.completedAt=new Date().toISOString();
+      this.save();
+      if(t.status==='done') this.toast('✅ Выполнено!');
+    },
+
+    openAdd() {
+      this.editTask=null;
+      this.form={title:'',desc:'',date:this.todayStr(),time:'',priority:'medium',status:'todo',tg:false};
+      this.showModal=true;
+      this.$nextTick(()=>this.$refs.titleInput?.focus());
+    },
+
+    openAddForDay(ds) {
+      this.editTask=null;
+      this.form={title:'',desc:'',date:ds||this.todayStr(),time:'',priority:'medium',status:'todo',tg:false};
+      this.showModal=true;
+      this.$nextTick(()=>this.$refs.titleInput?.focus());
+    },
+
+    openEdit(t) {
+      this.editTask=t;
+      this.form={...t};
+      this.showModal=true;
+    },
+
+    saveTask() {
+      if(!this.form.title.trim()){ this.toast('Введите название'); return; }
+      const isEdit=!!this.editTask;
+      if(isEdit) Object.assign(this.editTask,this.form);
+      else this.tasks.push({id:crypto.randomUUID(),createdAt:new Date().toISOString(),completedAt:null,...this.form});
+      this.save();
+      this.closeModal();
+      this.toast(isEdit?'✏️ Сохранено':'✅ Задача создана');
+    },
+
+    delTask() {
+      if(!confirm('Удалить задачу?')) return;
+      this.tasks=this.tasks.filter(t=>t.id!==this.editTask.id);
+      this.save();
+      this.closeModal();
+      this.toast('🗑 Удалено');
+    },
+
+    closeModal(){ this.showModal=false; this.editTask=null; },
+
+    // ── STORAGE ──
+    load() {
+      try {
+        const t=localStorage.getItem('tf_tasks'); if(t) this.tasks=JSON.parse(t);
+        const s=localStorage.getItem('tf_settings'); if(s) this.settings={...this.settings,...JSON.parse(s)};
+        const n=localStorage.getItem('tf_notified'); if(n) this._notified=new Set(JSON.parse(n));
+      } catch(e){}
+    },
+
+    save() { localStorage.setItem('tf_tasks',JSON.stringify(this.tasks)); },
+    saveSettings() { localStorage.setItem('tf_settings',JSON.stringify(this.settings)); },
+
+    // ── TELEGRAM ──
+    async tgSend(text) {
+      if(!this.settings.tgToken||!this.settings.tgChatId) return false;
+      try {
+        const r=await fetch(`https://api.telegram.org/bot${this.settings.tgToken}/sendMessage`,{
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({chat_id:this.settings.tgChatId,text,parse_mode:'HTML'})
+        });
+        return (await r.json()).ok;
+      } catch(e){ return false; }
+    },
+
+    async testTg() {
+      if(!this.settings.tgToken||!this.settings.tgChatId){this.toast('Заполните Token и Chat ID');return;}
+      this.toast('Отправляю...');
+      const ok=await this.tgSend('✅ <b>TaskFlow</b> подключён!\n\nУведомления о задачах будут приходить сюда 🎉');
+      this.toast(ok?'✅ Telegram работает!':'❌ Ошибка. Проверьте Token и Chat ID');
+    },
+
+    async checkDeadlines() {
+      if(!this.settings.remind||!this.settings.tgToken) return;
+      const now=new Date(), today=this.todayStr();
+      for(const t of this.tasks){
+        if(t.status==='done'||!t.time||t.date!==today||!t.tg) continue;
+        const key=t.id+'_'+t.date;
+        if(this._notified.has(key)) continue;
+        const dl=new Date(t.date+'T'+t.time+':00');
+        const diff=dl-now;
+        if(diff>0&&diff<=31*60000){
+          this._notified.add(key);
+          localStorage.setItem('tf_notified',JSON.stringify([...this._notified]));
+          const mins=Math.round(diff/60000);
+          await this.tgSend(`⏰ <b>Напоминание</b>\n\n📌 ${t.title}\n🕐 Через ${mins} мин (${t.time})\n📊 Приоритет: ${this.prioLabel(t.priority)}`);
+        }
+      }
+    },
+
+    async checkDailyReport() {
+      if(!this.settings.dailyReport||!this.settings.tgToken) return;
+      const now=new Date();
+      if(now.getHours()===21&&now.getMinutes()<2){
+        const key='report_'+this.todayStr();
+        if(localStorage.getItem(key)) return;
+        const td=this.todayTasks;
+        const done=td.filter(t=>t.status==='done').length, total=td.length;
+        const pct=total>0?Math.round(done/total*100):0;
+        const emoji=done===total&&total>0?'🏆':'💪';
+        await this.tgSend(`📊 <b>Итоги дня</b>\n\n${emoji} Выполнено: ${done}/${total} (${pct}%)\n${done===total&&total>0?'Отличная работа! Все задачи выполнены!':'Завтра продолжите!'}`);
+        localStorage.setItem(key,'1');
+      }
+    },
+
+    // ── UTILS ──
+    toast(msg) {
+      this.toastMsg=msg;
+      clearTimeout(this._toastTimer);
+      this._toastTimer=setTimeout(()=>this.toastMsg='',2600);
+    },
+
+    exportJSON() {
+      const blob=new Blob([JSON.stringify({tasks:this.tasks,exported:new Date().toISOString()},null,2)],{type:'application/json'});
+      const url=URL.createObjectURL(blob), a=document.createElement('a');
+      a.href=url; a.download='taskflow-backup.json'; a.click(); URL.revokeObjectURL(url);
+    },
+
+    importCSV(e) {
+      const file=e.target.files[0]; if(!file) return;
+      const reader=new FileReader();
+      reader.onload=ev=>{
+        const lines=ev.target.result.split('\n').filter(l=>l.trim());
+        let imported=0;
+        lines.forEach((line,i)=>{
+          if(i===0&&line.toLowerCase().includes('title')) return; // skip header
+          const cols=line.split(',').map(c=>c.replace(/^"|"$/g,'').trim());
+          const title=cols[0]||cols[0];
+          if(!title) return;
+          this.tasks.push({
+            id:crypto.randomUUID(), createdAt:new Date().toISOString(), completedAt:null,
+            title, desc:cols[1]||'', date:cols[2]||this.todayStr(),
+            time:cols[3]||'', priority:cols[4]||'medium', status:cols[5]||'todo', tg:false
+          });
+          imported++;
+        });
+        this.save();
+        this.toast(`📥 Импортировано ${imported} задач`);
+        e.target.value='';
+      };
+      reader.readAsText(file);
+    },
+
+    clearDone() {
+      if(!confirm('Удалить все выполненные задачи?')) return;
+      this.tasks=this.tasks.filter(t=>t.status!=='done');
+      this.save();
+      this.toast('🗑 Выполненные удалены');
+    },
+  };
+}
+</script>
+</body>
+</html>

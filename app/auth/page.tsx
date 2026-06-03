@@ -27,16 +27,12 @@ function AuthContent() {
     e.preventDefault()
     setError('')
     setLoading(true)
-
     await new Promise((r) => setTimeout(r, 600))
-
     const result =
       mode === 'login'
         ? login(email, password)
         : register(name, email, password, role)
-
     setLoading(false)
-
     if (result.ok) {
       window.dispatchEvent(new Event('auth-change'))
       router.push('/dashboard')
@@ -48,44 +44,50 @@ function AuthContent() {
   return (
     <div className="min-h-[calc(100vh-64px)] flex">
       {/* Left — decorative */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-emerald-800 to-teal-700 text-white p-12 flex-col justify-between">
-        <div>
-          <div className="flex items-center gap-2 mb-16">
-            <span className="text-3xl">⚡</span>
-            <span className="font-display font-bold text-2xl tracking-wide">SportMarket</span>
+      <div className="hidden lg:flex lg:w-1/2 bg-[#080808] text-white p-12 flex-col justify-between relative overflow-hidden border-r border-white/[0.05]">
+        <div className="absolute inset-0" style={{
+          backgroundImage: 'radial-gradient(ellipse 80% 60% at 20% 80%, rgba(212,255,0,0.06) 0%, transparent 60%)',
+        }} />
+        <div className="relative">
+          <div className="mb-16">
+            <span className="font-display text-3xl tracking-wider text-white">
+              SPORT<span className="text-[#D4FF00]">MKT</span>
+            </span>
           </div>
-          <h1 className="font-display text-5xl font-bold leading-tight mb-6">
-            Спорт объединяет<br />людей
+          <h1 className="font-display text-6xl font-normal leading-[0.9] tracking-wide mb-8">
+            СПОРТ<br />ОБЪЕДИНЯЕТ<br /><span className="text-[#D4FF00]">ЛЮДЕЙ</span>
           </h1>
-          <p className="text-emerald-200 text-lg leading-relaxed">
+          <p className="text-white/40 text-base leading-relaxed max-w-xs">
             Присоединяйтесь к тысячам любителей спорта, которые находят и покупают билеты на любимые мероприятия.
           </p>
         </div>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="relative grid grid-cols-3 gap-3">
           {[
-            { num: '10+', label: 'Мероприятий' },
-            { num: '5', label: 'Городов' },
-            { num: '24K', label: 'Билетов' },
+            { num: '20+', label: 'Мероприятий' },
+            { num: '10', label: 'Городов' },
+            { num: '30K', label: 'Билетов' },
           ].map((s) => (
-            <div key={s.label} className="bg-white/10 rounded-2xl p-4 text-center backdrop-blur-sm">
-              <p className="font-display font-bold text-2xl mb-1">{s.num}</p>
-              <p className="text-emerald-200 text-xs">{s.label}</p>
+            <div key={s.label} className="bg-white/[0.04] border border-white/[0.06] rounded-2xl p-4 text-center">
+              <p className="font-display text-3xl text-[#D4FF00] mb-1">{s.num}</p>
+              <p className="text-white/30 text-xs uppercase tracking-wider">{s.label}</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* Right — form */}
-      <div className="flex-1 flex items-center justify-center px-6 py-12 bg-gray-50">
+      <div className="flex-1 flex items-center justify-center px-6 py-12 bg-[#0c0c0c]">
         <div className="w-full max-w-md">
-          {/* Tabs */}
-          <div className="flex bg-gray-200 rounded-xl p-1 mb-8">
+          {/* Mode tabs */}
+          <div className="flex bg-white/[0.04] border border-white/[0.06] rounded-2xl p-1 mb-8">
             {(['login', 'register'] as const).map((m) => (
               <button
                 key={m}
                 onClick={() => { setMode(m); setError('') }}
-                className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${
-                  mode === m ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'
+                className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all ${
+                  mode === m
+                    ? 'bg-[#D4FF00] text-black'
+                    : 'text-white/40 hover:text-white'
                 }`}
               >
                 {m === 'login' ? 'Войти' : 'Регистрация'}
@@ -93,40 +95,42 @@ function AuthContent() {
             ))}
           </div>
 
-          <h2 className="text-2xl font-bold text-gray-900 mb-1">
+          <h2 className="text-2xl font-bold text-white mb-1">
             {mode === 'login' ? 'Добро пожаловать' : 'Создайте аккаунт'}
           </h2>
-          <p className="text-gray-500 text-sm mb-8">
+          <p className="text-white/30 text-sm mb-8">
             {mode === 'login' ? 'Войдите в свой аккаунт' : 'Быстрая регистрация за 30 секунд'}
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === 'register' && (
-              <FormField
-                label="Ваше имя"
-                icon={<User size={16} />}
-                type="text"
-                value={name}
-                onChange={setName}
-                placeholder="Иван Иванов"
-                required
-              />
+              <DarkField label="Ваше имя" icon={<User size={15} />}>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Иван Иванов"
+                  required
+                  className={inputCls}
+                />
+              </DarkField>
             )}
 
-            <FormField
-              label="Email"
-              icon={<Mail size={16} />}
-              type="email"
-              value={email}
-              onChange={setEmail}
-              placeholder="ivan@example.ru"
-              required
-            />
+            <DarkField label="Email" icon={<Mail size={15} />}>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="ivan@example.ru"
+                required
+                className={inputCls}
+              />
+            </DarkField>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Пароль</label>
-              <div className="relative flex items-center bg-white border border-gray-200 rounded-xl focus-within:border-emerald-500 transition-colors">
-                <div className="pl-3 text-gray-400"><Lock size={16} /></div>
+              <label className="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Пароль</label>
+              <div className="flex items-center bg-white/[0.05] border border-white/[0.07] rounded-xl focus-within:border-[#D4FF00]/30 transition-colors">
+                <div className="pl-3.5 text-white/25"><Lock size={15} /></div>
                 <input
                   type={showPass ? 'text' : 'password'}
                   value={password}
@@ -134,36 +138,39 @@ function AuthContent() {
                   placeholder="Минимум 6 символов"
                   required
                   minLength={6}
-                  className="flex-1 px-3 py-3 text-sm text-gray-800 outline-none bg-transparent"
+                  className="flex-1 px-3 py-3 text-sm text-white placeholder-white/20 outline-none bg-transparent"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPass(!showPass)}
-                  className="pr-3 text-gray-400 hover:text-gray-600"
+                  className="pr-3.5 text-white/25 hover:text-white/50 transition-colors"
                 >
-                  {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
                 </button>
               </div>
             </div>
 
             {mode === 'register' && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Тип аккаунта</label>
+                <label className="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Тип аккаунта</label>
                 <div className="grid grid-cols-2 gap-2">
                   {([
-                    { value: 'user', label: '🎫 Участник', desc: 'Покупаю билеты' },
-                    { value: 'organizer', label: '📋 Организатор', desc: 'Создаю события' },
+                    { value: 'user', label: 'Участник', emoji: '🎫', desc: 'Покупаю билеты' },
+                    { value: 'organizer', label: 'Организатор', emoji: '📋', desc: 'Создаю события' },
                   ] as const).map((r) => (
                     <button
                       key={r.value}
                       type="button"
                       onClick={() => setRole(r.value)}
-                      className={`p-3 text-left rounded-xl border-2 transition-all text-sm ${
-                        role === r.value ? 'border-emerald-500 bg-emerald-50' : 'border-gray-200 hover:border-gray-300'
+                      className={`p-3.5 text-left rounded-xl border-2 transition-all ${
+                        role === r.value
+                          ? 'border-[#D4FF00]/50 bg-[#D4FF00]/[0.06]'
+                          : 'border-white/[0.06] bg-white/[0.03] hover:border-white/10'
                       }`}
                     >
-                      <p className="font-semibold text-gray-800">{r.label}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">{r.desc}</p>
+                      <p className="text-lg mb-1">{r.emoji}</p>
+                      <p className="font-semibold text-white text-sm">{r.label}</p>
+                      <p className="text-xs text-white/30 mt-0.5">{r.desc}</p>
                     </button>
                   ))}
                 </div>
@@ -171,7 +178,7 @@ function AuthContent() {
             )}
 
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-600 rounded-xl px-4 py-3 text-sm">
+              <div className="bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl px-4 py-3 text-sm">
                 {error}
               </div>
             )}
@@ -179,28 +186,27 @@ function AuthContent() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 py-3.5 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-60 text-sm"
+              className="w-full flex items-center justify-center gap-2 py-3.5 bg-[#D4FF00] text-black font-bold rounded-xl hover:bg-[#c8f000] transition-colors disabled:opacity-50 text-sm mt-2"
             >
               {loading ? (
-                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
               ) : (
                 <>
                   {mode === 'login' ? 'Войти' : 'Создать аккаунт'}
-                  <ArrowRight size={16} />
+                  <ArrowRight size={15} />
                 </>
               )}
             </button>
           </form>
 
-          <p className="text-center text-xs text-gray-400 mt-6">
+          <p className="text-center text-xs text-white/20 mt-6">
             Нажимая кнопку, вы соглашаетесь с{' '}
-            <span className="text-emerald-600 cursor-pointer hover:underline">условиями использования</span>
+            <span className="text-[#D4FF00]/50 cursor-pointer hover:text-[#D4FF00] transition-colors">условиями использования</span>
           </p>
 
-          {/* Demo hint */}
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-            <p className="text-xs text-blue-700 font-medium mb-1">💡 Демо-режим</p>
-            <p className="text-xs text-blue-600">
+          <div className="mt-6 p-4 bg-[#D4FF00]/[0.04] border border-[#D4FF00]/10 rounded-xl">
+            <p className="text-xs text-[#D4FF00]/60 font-medium mb-1">💡 Демо-режим</p>
+            <p className="text-xs text-white/25">
               Данные хранятся в браузере. Создайте любой аккаунт для тестирования.
             </p>
           </div>
@@ -210,36 +216,15 @@ function AuthContent() {
   )
 }
 
-function FormField({
-  label,
-  icon,
-  type,
-  value,
-  onChange,
-  placeholder,
-  required,
-}: {
-  label: string
-  icon: React.ReactNode
-  type: string
-  value: string
-  onChange: (v: string) => void
-  placeholder: string
-  required?: boolean
-}) {
+const inputCls = 'w-full px-3 py-3 text-sm text-white placeholder-white/20 outline-none bg-transparent'
+
+function DarkField({ label, icon, children }: { label: string; icon: React.ReactNode; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1.5">{label}</label>
-      <div className="flex items-center bg-white border border-gray-200 rounded-xl focus-within:border-emerald-500 transition-colors">
-        <div className="pl-3 text-gray-400">{icon}</div>
-        <input
-          type={type}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          required={required}
-          className="flex-1 px-3 py-3 text-sm text-gray-800 outline-none bg-transparent"
-        />
+      <label className="block text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">{label}</label>
+      <div className="flex items-center bg-white/[0.05] border border-white/[0.07] rounded-xl focus-within:border-[#D4FF00]/30 transition-colors">
+        <div className="pl-3.5 text-white/25">{icon}</div>
+        {children}
       </div>
     </div>
   )

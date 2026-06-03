@@ -8,6 +8,7 @@ const KEYS = {
   USERS: 'sm_users',
   TICKETS: 'sm_tickets',
   CURRENT_USER: 'sm_current_user',
+  WISHLIST: 'sm_wishlist',
 } as const
 
 function read<T>(key: string, fallback: T): T {
@@ -183,6 +184,28 @@ export function purchaseTicket(
   saveEvent(updatedEvent)
 
   return { ok: true, ticket }
+}
+
+// ----- Wishlist -----
+
+export function getWishlist(): string[] {
+  return read<string[]>(KEYS.WISHLIST, [])
+}
+
+export function toggleWishlist(eventId: string): boolean {
+  const list = getWishlist()
+  const idx = list.indexOf(eventId)
+  if (idx >= 0) {
+    write(KEYS.WISHLIST, list.filter((id) => id !== eventId))
+    return false
+  } else {
+    write(KEYS.WISHLIST, [...list, eventId])
+    return true
+  }
+}
+
+export function isInWishlist(eventId: string): boolean {
+  return getWishlist().includes(eventId)
 }
 
 export function generateId(): string {

@@ -22,6 +22,8 @@ const ALL_SPORTS: { value: Sport | 'all'; label: string; emoji: string }[] = [
   { value: 'boxing', label: 'Бокс', emoji: '🥊' },
   { value: 'yoga', label: 'Йога', emoji: '🧘' },
   { value: 'skiing', label: 'Лыжи', emoji: '⛷️' },
+  { value: 'cycling', label: 'Вело', emoji: '🚴' },
+  { value: 'martial_arts', label: 'Единоборства', emoji: '🥋' },
 ]
 
 const SORT_OPTIONS = [
@@ -45,7 +47,7 @@ function EventsContent() {
     dateFrom: '',
     dateTo: '',
     priceMin: 0,
-    priceMax: 10000,
+    priceMax: 50000,
     search: params.get('q') || '',
   })
 
@@ -58,7 +60,7 @@ function EventsContent() {
   }
 
   function resetFilters() {
-    setFilters({ sport: 'all', city: '', dateFrom: '', dateTo: '', priceMin: 0, priceMax: 10000, search: '' })
+    setFilters({ sport: 'all', city: '', dateFrom: '', dateTo: '', priceMin: 0, priceMax: 50000, search: '' })
   }
 
   const filtered = events.filter((e) => {
@@ -89,76 +91,80 @@ function EventsContent() {
     filters.dateFrom !== '',
     filters.dateTo !== '',
     filters.priceMin > 0,
-    filters.priceMax < 10000,
+    filters.priceMax < 50000,
   ].filter(Boolean).length
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Page header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Мероприятия</h1>
-        <p className="text-gray-500 mt-1">Найдено: {sorted.length} событий</p>
+      <div className="mb-8">
+        <h1 className="font-display text-5xl text-white tracking-wide">МЕРОПРИЯТИЯ</h1>
+        <p className="text-white/30 mt-2 text-sm">Найдено: {sorted.length} событий</p>
       </div>
 
       {/* Search + Sort bar */}
-      <div className="flex gap-3 mb-6">
-        <div className="flex-1 flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2.5 focus-within:border-emerald-400 transition-colors">
-          <Search size={17} className="text-gray-400 flex-shrink-0" />
+      <div className="flex gap-2.5 mb-5">
+        <div className="flex-1 flex items-center gap-2 bg-white/[0.05] border border-white/[0.07] rounded-xl px-4 py-3 focus-within:border-[#D4FF00]/30 transition-colors">
+          <Search size={15} className="text-white/25 flex-shrink-0" />
           <input
             type="text"
             value={filters.search}
             onChange={(e) => updateFilter('search', e.target.value)}
             placeholder="Поиск по названию, городу..."
-            className="flex-1 text-sm text-gray-800 placeholder-gray-400 outline-none bg-transparent"
+            className="flex-1 text-sm text-white placeholder-white/20 outline-none bg-transparent"
           />
           {filters.search && (
-            <button onClick={() => updateFilter('search', '')} className="text-gray-400 hover:text-gray-600">
-              <X size={14} />
+            <button onClick={() => updateFilter('search', '')} className="text-white/25 hover:text-white/60">
+              <X size={13} />
             </button>
           )}
         </div>
         <button
           onClick={() => setFiltersOpen(!filtersOpen)}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium border transition-colors ${
-            activeFilterCount > 0 ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white border-gray-200 text-gray-600 hover:border-emerald-300'
+          className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium border transition-all ${
+            activeFilterCount > 0
+              ? 'bg-[#D4FF00] text-black border-transparent'
+              : 'bg-white/[0.05] border-white/[0.07] text-white/50 hover:text-white hover:border-white/10'
           }`}
         >
-          <SlidersHorizontal size={16} />
+          <SlidersHorizontal size={15} />
           Фильтры
           {activeFilterCount > 0 && (
-            <span className="bg-white text-emerald-600 text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+            <span className="bg-black/20 text-black text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
               {activeFilterCount}
             </span>
           )}
         </button>
-        <div className="relative hidden sm:flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-3 py-2.5">
+        <div className="relative hidden sm:flex items-center gap-2 bg-white/[0.05] border border-white/[0.07] rounded-xl px-3 py-3">
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value)}
-            className="text-sm text-gray-700 outline-none bg-transparent pr-4 appearance-none cursor-pointer"
+            className="text-sm text-white/50 hover:text-white outline-none bg-transparent pr-5 appearance-none cursor-pointer transition-colors"
           >
             {SORT_OPTIONS.map((o) => (
               <option key={o.value} value={o.value}>{o.label}</option>
             ))}
           </select>
-          <ChevronDown size={14} className="text-gray-400 pointer-events-none absolute right-3" />
+          <ChevronDown size={12} className="text-white/25 pointer-events-none absolute right-3" />
         </div>
       </div>
 
       {/* Filters panel */}
       {filtersOpen && (
-        <div className="bg-white border border-gray-200 rounded-2xl p-5 mb-6 animate-fade-in">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-[#141414] border border-white/[0.07] rounded-2xl p-5 mb-5 animate-fade-in">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {/* Sport */}
             <div>
-              <label className="block text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Вид спорта</label>
+              <label className="block text-[10px] font-semibold text-white/30 mb-3 uppercase tracking-widest">Вид спорта</label>
               <div className="flex flex-wrap gap-1.5">
                 {ALL_SPORTS.map((s) => (
                   <button
                     key={s.value}
                     onClick={() => updateFilter('sport', s.value)}
-                    className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                      filters.sport === s.value ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    className={`px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all border ${
+                      filters.sport === s.value
+                        ? 'bg-[#D4FF00] text-black border-transparent'
+                        : 'bg-white/[0.04] border-white/[0.06] text-white/40 hover:text-white hover:border-white/10'
                     }`}
                   >
                     {s.emoji} {s.label}
@@ -169,11 +175,11 @@ function EventsContent() {
 
             {/* City */}
             <div>
-              <label className="block text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Город</label>
+              <label className="block text-[10px] font-semibold text-white/30 mb-3 uppercase tracking-widest">Город</label>
               <select
                 value={filters.city}
                 onChange={(e) => updateFilter('city', e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-700 outline-none focus:border-emerald-400"
+                className="w-full bg-white/[0.05] border border-white/[0.07] rounded-xl px-3 py-2.5 text-sm text-white/60 outline-none focus:border-[#D4FF00]/30 cursor-pointer"
               >
                 <option value="">Все города</option>
                 {CITIES.map((c) => <option key={c} value={c}>{c}</option>)}
@@ -182,27 +188,27 @@ function EventsContent() {
 
             {/* Dates */}
             <div>
-              <label className="block text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Дата</label>
+              <label className="block text-[10px] font-semibold text-white/30 mb-3 uppercase tracking-widest">Дата</label>
               <div className="flex gap-2">
                 <input
                   type="date"
                   value={filters.dateFrom}
                   onChange={(e) => updateFilter('dateFrom', e.target.value)}
-                  className="flex-1 border border-gray-200 rounded-xl px-2.5 py-2 text-sm text-gray-700 outline-none focus:border-emerald-400"
+                  className="flex-1 bg-white/[0.05] border border-white/[0.07] rounded-xl px-2.5 py-2 text-sm text-white/50 outline-none focus:border-[#D4FF00]/30"
                 />
                 <input
                   type="date"
                   value={filters.dateTo}
                   onChange={(e) => updateFilter('dateTo', e.target.value)}
-                  className="flex-1 border border-gray-200 rounded-xl px-2.5 py-2 text-sm text-gray-700 outline-none focus:border-emerald-400"
+                  className="flex-1 bg-white/[0.05] border border-white/[0.07] rounded-xl px-2.5 py-2 text-sm text-white/50 outline-none focus:border-[#D4FF00]/30"
                 />
               </div>
             </div>
 
             {/* Price */}
             <div>
-              <label className="block text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">
-                Цена: {formatPrice(filters.priceMin)} — {formatPrice(filters.priceMax)}
+              <label className="block text-[10px] font-semibold text-white/30 mb-3 uppercase tracking-widest">
+                Цена: {formatPrice(filters.priceMin)} — {filters.priceMax >= 50000 ? 'любая' : formatPrice(filters.priceMax)}
               </label>
               <div className="flex gap-2">
                 <input
@@ -211,7 +217,7 @@ function EventsContent() {
                   onChange={(e) => updateFilter('priceMin', +e.target.value)}
                   min={0}
                   placeholder="от"
-                  className="flex-1 border border-gray-200 rounded-xl px-2.5 py-2 text-sm text-gray-700 outline-none focus:border-emerald-400"
+                  className="flex-1 bg-white/[0.05] border border-white/[0.07] rounded-xl px-2.5 py-2 text-sm text-white/50 outline-none focus:border-[#D4FF00]/30"
                 />
                 <input
                   type="number"
@@ -219,31 +225,34 @@ function EventsContent() {
                   onChange={(e) => updateFilter('priceMax', +e.target.value)}
                   min={0}
                   placeholder="до"
-                  className="flex-1 border border-gray-200 rounded-xl px-2.5 py-2 text-sm text-gray-700 outline-none focus:border-emerald-400"
+                  className="flex-1 bg-white/[0.05] border border-white/[0.07] rounded-xl px-2.5 py-2 text-sm text-white/50 outline-none focus:border-[#D4FF00]/30"
                 />
               </div>
             </div>
           </div>
 
-          <div className="flex justify-end mt-4">
-            <button onClick={resetFilters} className="text-sm text-gray-500 hover:text-red-500 transition-colors flex items-center gap-1">
-              <X size={14} />
-              Сбросить всё
+          <div className="flex justify-end mt-4 pt-4 border-t border-white/[0.05]">
+            <button
+              onClick={resetFilters}
+              className="text-sm text-white/30 hover:text-red-400 transition-colors flex items-center gap-1.5"
+            >
+              <X size={13} />
+              Сбросить все фильтры
             </button>
           </div>
         </div>
       )}
 
       {/* Sport tabs */}
-      <div className="flex gap-2 overflow-x-auto pb-2 mb-6">
+      <div className="flex gap-2 overflow-x-auto pb-2 mb-7">
         {ALL_SPORTS.map((s) => (
           <button
             key={s.value}
             onClick={() => updateFilter('sport', s.value)}
-            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium whitespace-nowrap flex-shrink-0 transition-all ${
+            className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium whitespace-nowrap flex-shrink-0 transition-all border ${
               filters.sport === s.value
-                ? 'bg-emerald-600 text-white'
-                : 'bg-white border border-gray-200 text-gray-600 hover:border-emerald-300'
+                ? 'bg-[#D4FF00] text-black border-transparent'
+                : 'bg-white/[0.04] border-white/[0.06] text-white/40 hover:text-white hover:border-white/10'
             }`}
           >
             <span>{s.emoji}</span>
@@ -256,9 +265,12 @@ function EventsContent() {
       {sorted.length === 0 ? (
         <div className="text-center py-24">
           <p className="text-5xl mb-4">🔍</p>
-          <p className="text-xl font-semibold text-gray-700 mb-2">Ничего не найдено</p>
-          <p className="text-gray-400 mb-6">Попробуйте изменить параметры поиска</p>
-          <button onClick={resetFilters} className="px-6 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-semibold hover:bg-emerald-700 transition-colors">
+          <p className="text-xl font-semibold text-white/50 mb-2">Ничего не найдено</p>
+          <p className="text-white/25 mb-6 text-sm">Попробуйте изменить параметры поиска</p>
+          <button
+            onClick={resetFilters}
+            className="px-6 py-3 bg-[#D4FF00] text-black rounded-xl text-sm font-bold hover:bg-[#c8f000] transition-colors"
+          >
             Сбросить фильтры
           </button>
         </div>

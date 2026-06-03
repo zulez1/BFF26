@@ -9,6 +9,8 @@ export type Sport =
   | 'boxing'
   | 'yoga'
   | 'skiing'
+  | 'cycling'
+  | 'martial_arts'
   | 'other'
 
 export const SPORT_LABELS: Record<Sport, string> = {
@@ -22,6 +24,8 @@ export const SPORT_LABELS: Record<Sport, string> = {
   boxing: 'Бокс',
   yoga: 'Йога',
   skiing: 'Лыжи',
+  cycling: 'Велоспорт',
+  martial_arts: 'Единоборства',
   other: 'Другое',
 }
 
@@ -36,21 +40,25 @@ export const SPORT_EMOJIS: Record<Sport, string> = {
   boxing: '🥊',
   yoga: '🧘',
   skiing: '⛷️',
+  cycling: '🚴',
+  martial_arts: '🥋',
   other: '🏅',
 }
 
 export const SPORT_COLORS: Record<Sport, string> = {
-  football: 'bg-green-100 text-green-700',
-  basketball: 'bg-orange-100 text-orange-700',
-  running: 'bg-blue-100 text-blue-700',
-  tennis: 'bg-yellow-100 text-yellow-700',
-  swimming: 'bg-cyan-100 text-cyan-700',
-  hockey: 'bg-indigo-100 text-indigo-700',
-  volleyball: 'bg-purple-100 text-purple-700',
-  boxing: 'bg-red-100 text-red-700',
-  yoga: 'bg-pink-100 text-pink-700',
-  skiing: 'bg-sky-100 text-sky-700',
-  other: 'bg-gray-100 text-gray-700',
+  football: 'bg-green-500/10 text-green-400 border border-green-500/20',
+  basketball: 'bg-orange-500/10 text-orange-400 border border-orange-500/20',
+  running: 'bg-blue-500/10 text-blue-400 border border-blue-500/20',
+  tennis: 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20',
+  swimming: 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20',
+  hockey: 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20',
+  volleyball: 'bg-purple-500/10 text-purple-400 border border-purple-500/20',
+  boxing: 'bg-red-500/10 text-red-400 border border-red-500/20',
+  yoga: 'bg-pink-500/10 text-pink-400 border border-pink-500/20',
+  skiing: 'bg-sky-500/10 text-sky-400 border border-sky-500/20',
+  cycling: 'bg-lime-500/10 text-lime-400 border border-lime-500/20',
+  martial_arts: 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
+  other: 'bg-white/5 text-white/50 border border-white/10',
 }
 
 export interface SportEvent {

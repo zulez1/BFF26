@@ -2,17 +2,18 @@
 
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { getCurrentUser, getTicketsByUser, getEvents, logout, updateProfile, deleteEvent } from '@/lib/store'
+import { getCurrentUser, getTicketsByUser, getEvents, logout, updateProfile, deleteEvent, getWishlist } from '@/lib/store'
 import { AuthState, SportEvent, Ticket } from '@/lib/types'
 import { formatDate, formatPrice } from '@/lib/utils'
 import EventModal from '@/components/EventModal'
+import EventCard from '@/components/EventCard'
 import {
   User, Ticket as TicketIcon, Calendar, LogOut, Edit2, Check, X,
-  Plus, Trash2, MapPin, Clock,
+  Plus, Trash2, MapPin, Clock, Heart, TrendingUp, Zap,
 } from 'lucide-react'
 import Link from 'next/link'
 
-type Tab = 'profile' | 'tickets' | 'events'
+type Tab = 'profile' | 'tickets' | 'events' | 'wishlist'
 
 function DashboardContent() {
   const router = useRouter()
@@ -21,18 +22,26 @@ function DashboardContent() {
   const [tab, setTab] = useState<Tab>((params.get('tab') as Tab) || 'profile')
   const [tickets, setTickets] = useState<Ticket[]>([])
   const [events, setEvents] = useState<SportEvent[]>([])
+  const [wishlistEvents, setWishlistEvents] = useState<SportEvent[]>([])
   const [selectedEvent, setSelectedEvent] = useState<SportEvent | null>(null)
   const [editingName, setEditingName] = useState(false)
   const [newName, setNewName] = useState('')
 
-  useEffect(() => {
+  function loadData() {
     const u = getCurrentUser()
     if (!u) { router.replace('/auth'); return }
     setUser(u)
     setNewName(u.name)
-    setTickets(getTicketsByUser(u.id))
+    const allTickets = getTicketsByUser(u.id)
+    setTickets(allTickets)
     const allEvents = getEvents()
     setEvents(allEvents.filter((e) => e.organizerId === u.id))
+    const wishlist = getWishlist()
+    setWishlistEvents(allEvents.filter((e) => wishlist.includes(e.id)))
+  }
+
+  useEffect(() => {
+    loadData()
   }, [router])
 
   function handleLogout() {
@@ -56,17 +65,21 @@ function DashboardContent() {
     setEvents((prev) => prev.filter((e) => e.id !== id))
   }
 
+  const allEvents = getEvents()
   const ticketsWithEvents = tickets.map((t) => ({
     ticket: t,
-    event: getEvents().find((e) => e.id === t.eventId),
+    event: allEvents.find((e) => e.id === t.eventId),
   }))
 
   if (!user) return null
 
+  const totalSpent = tickets.reduce((a, t) => a + t.totalPrice, 0)
+
   const tabs: { id: Tab; label: string; icon: React.ReactNode; count?: number }[] = [
-    { id: 'profile', label: 'Профиль', icon: <User size={17} /> },
-    { id: 'tickets', label: 'Мои билеты', icon: <TicketIcon size={17} />, count: tickets.length },
-    { id: 'events', label: 'Мои события', icon: <Calendar size={17} />, count: events.length },
+    { id: 'profile', label: 'Профиль', icon: <User size={15} /> },
+    { id: 'tickets', label: 'Билеты', icon: <TicketIcon size={15} />, count: tickets.length },
+    { id: 'events', label: 'События', icon: <Calendar size={15} />, count: events.length },
+    { id: 'wishlist', label: 'Избранное', icon: <Heart size={15} />, count: wishlistEvents.length },
   ]
 
   return (
@@ -74,32 +87,36 @@ function DashboardContent() {
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Личный кабинет</h1>
-          <p className="text-gray-500 text-sm mt-1">Добро пожаловать, {user.name}!</p>
+          <h1 className="font-display text-4xl text-white tracking-wide">КАБИНЕТ</h1>
+          <p className="text-white/30 text-sm mt-1">Привет, {user.name.split(' ')[0]}!</p>
         </div>
         <button
           onClick={handleLogout}
-          className="flex items-center gap-1.5 px-4 py-2 text-sm text-red-500 border border-red-200 rounded-xl hover:bg-red-50 transition-colors"
+          className="flex items-center gap-1.5 px-4 py-2 text-sm text-red-400 border border-red-500/20 rounded-xl hover:bg-red-500/10 transition-all"
         >
-          <LogOut size={15} />
+          <LogOut size={14} />
           Выйти
         </button>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-gray-100 rounded-xl p-1 mb-8 overflow-x-auto">
+      <div className="flex gap-1 bg-white/[0.04] border border-white/[0.06] rounded-2xl p-1 mb-8 overflow-x-auto">
         {tabs.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${
-              tab === t.id ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
+              tab === t.id
+                ? 'bg-[#D4FF00] text-black'
+                : 'text-white/40 hover:text-white'
             }`}
           >
             {t.icon}
             {t.label}
             {t.count !== undefined && t.count > 0 && (
-              <span className={`text-xs px-1.5 py-0.5 rounded-full ${tab === t.id ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-200 text-gray-500'}`}>
+              <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+                tab === t.id ? 'bg-black/20 text-black' : 'bg-white/[0.08] text-white/40'
+              }`}>
                 {t.count}
               </span>
             )}
@@ -109,10 +126,11 @@ function DashboardContent() {
 
       {/* Profile tab */}
       {tab === 'profile' && (
-        <div className="grid gap-5">
-          <div className="bg-white rounded-2xl border border-gray-200 p-6">
+        <div className="space-y-4">
+          {/* User card */}
+          <div className="bg-[#141414] border border-white/[0.07] rounded-2xl p-6">
             <div className="flex items-start gap-5">
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-3xl font-bold flex-shrink-0">
+              <div className="w-18 h-18 w-[72px] h-[72px] rounded-2xl bg-[#D4FF00]/10 border border-[#D4FF00]/20 flex items-center justify-center text-[#D4FF00] text-2xl font-bold font-display flex-shrink-0">
                 {user.name.charAt(0).toUpperCase()}
               </div>
               <div className="flex-1">
@@ -122,67 +140,73 @@ function DashboardContent() {
                       <input
                         value={newName}
                         onChange={(e) => setNewName(e.target.value)}
-                        className="border border-emerald-400 rounded-lg px-3 py-1.5 text-sm font-semibold outline-none"
+                        className="bg-white/[0.06] border border-[#D4FF00]/30 rounded-xl px-3 py-1.5 text-sm font-semibold text-white outline-none"
                         autoFocus
                         onKeyDown={(e) => { if (e.key === 'Enter') handleSaveName() }}
                       />
-                      <button onClick={handleSaveName} className="p-1.5 bg-emerald-100 text-emerald-600 rounded-lg hover:bg-emerald-200">
-                        <Check size={15} />
+                      <button onClick={handleSaveName} className="p-1.5 bg-[#D4FF00]/10 text-[#D4FF00] rounded-lg hover:bg-[#D4FF00]/20">
+                        <Check size={14} />
                       </button>
-                      <button onClick={() => { setEditingName(false); setNewName(user.name) }} className="p-1.5 bg-gray-100 text-gray-500 rounded-lg hover:bg-gray-200">
-                        <X size={15} />
+                      <button onClick={() => { setEditingName(false); setNewName(user.name) }} className="p-1.5 bg-white/[0.06] text-white/40 rounded-lg hover:bg-white/10">
+                        <X size={14} />
                       </button>
                     </div>
                   ) : (
                     <>
-                      <h2 className="text-xl font-bold text-gray-900">{user.name}</h2>
-                      <button onClick={() => setEditingName(true)} className="p-1.5 text-gray-400 hover:text-emerald-600 rounded-lg hover:bg-emerald-50">
-                        <Edit2 size={14} />
+                      <h2 className="text-xl font-bold text-white">{user.name}</h2>
+                      <button
+                        onClick={() => setEditingName(true)}
+                        className="p-1.5 text-white/20 hover:text-[#D4FF00] rounded-lg hover:bg-[#D4FF00]/10 transition-all"
+                      >
+                        <Edit2 size={13} />
                       </button>
                     </>
                   )}
                 </div>
-                <p className="text-gray-500 text-sm">{user.email}</p>
-                <div className="flex items-center gap-2 mt-2">
-                  <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
-                    user.role === 'organizer' ? 'bg-purple-100 text-purple-700' : 'bg-emerald-100 text-emerald-700'
+                <p className="text-white/30 text-sm">{user.email}</p>
+                <div className="flex items-center gap-2 mt-3">
+                  <span className={`text-xs px-2.5 py-1 rounded-full font-medium border ${
+                    user.role === 'organizer'
+                      ? 'bg-purple-500/10 text-purple-400 border-purple-500/20'
+                      : 'bg-[#D4FF00]/10 text-[#D4FF00] border-[#D4FF00]/20'
                   }`}>
                     {user.role === 'organizer' ? '📋 Организатор' : '🎫 Участник'}
                   </span>
-                  <span className="text-xs text-gray-400">
-                    с {formatDate(user.createdAt)}
-                  </span>
+                  <span className="text-xs text-white/20">с {formatDate(user.createdAt)}</span>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-3">
             {[
-              { label: 'Билетов куплено', value: tickets.length, icon: '🎫' },
-              { label: 'Событий создано', value: events.length, icon: '📅' },
-              { label: 'Потрачено', value: formatPrice(tickets.reduce((a, t) => a + t.totalPrice, 0)), icon: '💳' },
+              { label: 'Билетов куплено', value: tickets.length, icon: <TicketIcon size={18} />, color: 'text-[#D4FF00]' },
+              { label: 'Событий создано', value: events.length, icon: <Calendar size={18} />, color: 'text-purple-400' },
+              { label: 'Потрачено', value: formatPrice(totalSpent), icon: <TrendingUp size={18} />, color: 'text-blue-400' },
             ].map((s) => (
-              <div key={s.label} className="bg-white rounded-2xl border border-gray-200 p-4 text-center">
-                <p className="text-2xl mb-1">{s.icon}</p>
-                <p className="text-xl font-bold text-gray-900">{s.value}</p>
-                <p className="text-xs text-gray-500 mt-0.5">{s.label}</p>
+              <div key={s.label} className="bg-[#141414] border border-white/[0.07] rounded-2xl p-4 text-center">
+                <div className={`flex justify-center mb-2 ${s.color}`}>{s.icon}</div>
+                <p className="text-xl font-bold text-white">{s.value}</p>
+                <p className="text-xs text-white/25 mt-0.5">{s.label}</p>
               </div>
             ))}
           </div>
 
           {user.role === 'organizer' && (
-            <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl p-5 flex items-center justify-between">
+            <div className="bg-[#141414] border border-[#D4FF00]/15 rounded-2xl p-5 flex items-center justify-between">
               <div>
-                <h3 className="font-semibold text-gray-900 mb-1">Создайте новое мероприятие</h3>
-                <p className="text-sm text-gray-500">Разместите событие и продавайте билеты</p>
+                <h3 className="font-semibold text-white mb-1 flex items-center gap-2">
+                  <Zap size={16} className="text-[#D4FF00]" />
+                  Создайте новое мероприятие
+                </h3>
+                <p className="text-sm text-white/30">Разместите событие и начните продавать билеты</p>
               </div>
               <Link
                 href="/create-event"
-                className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
+                className="flex items-center gap-2 px-4 py-2.5 bg-[#D4FF00] text-black text-sm font-bold rounded-xl hover:bg-[#c8f000] transition-colors"
               >
-                <Plus size={16} />
+                <Plus size={15} />
                 Создать
               </Link>
             </div>
@@ -196,56 +220,69 @@ function DashboardContent() {
           {ticketsWithEvents.length === 0 ? (
             <div className="text-center py-24">
               <p className="text-5xl mb-4">🎫</p>
-              <p className="text-xl font-semibold text-gray-700 mb-2">Билетов пока нет</p>
-              <p className="text-gray-400 mb-6 text-sm">Найдите мероприятие и купите билет</p>
-              <Link href="/events" className="px-6 py-3 bg-emerald-600 text-white rounded-xl font-semibold text-sm hover:bg-emerald-700 transition-colors">
+              <p className="text-xl font-semibold text-white/50 mb-2">Билетов пока нет</p>
+              <p className="text-white/25 mb-6 text-sm">Найдите мероприятие и купите билет</p>
+              <Link href="/events" className="px-6 py-3 bg-[#D4FF00] text-black rounded-xl font-bold text-sm hover:bg-[#c8f000] transition-colors">
                 Каталог мероприятий
               </Link>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {ticketsWithEvents.map(({ ticket, event }) => (
-                <div key={ticket.id} className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:border-emerald-300 transition-colors">
+                <div key={ticket.id} className="bg-[#141414] border border-white/[0.07] rounded-2xl overflow-hidden hover:border-[#D4FF00]/20 transition-colors">
                   <div className="flex gap-4 p-4">
-                    {event && (
-                      <div className="w-24 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
-                        <img src={event.imageUrl} alt={event.title} className="w-full h-full object-cover" />
+                    {event ? (
+                      <div className="w-20 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-[#1a1a1a]">
+                        <img src={event.imageUrl} alt={event.title} className="w-full h-full object-cover opacity-80" />
+                      </div>
+                    ) : (
+                      <div className="w-20 h-16 rounded-xl bg-[#1a1a1a] flex-shrink-0 flex items-center justify-center text-white/20">
+                        <TicketIcon size={20} />
                       </div>
                     )}
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="font-bold text-gray-900 text-sm leading-tight mb-1">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <h3 className="font-bold text-white text-sm leading-tight mb-1 truncate">
                             {event?.title || 'Событие удалено'}
                           </h3>
                           {event && (
-                            <div className="flex items-center gap-3 text-xs text-gray-500">
+                            <div className="flex items-center gap-3 text-xs text-white/30">
                               <span className="flex items-center gap-1">
-                                <Calendar size={11} />
+                                <Calendar size={10} />
                                 {formatDate(event.date)}
                               </span>
                               <span className="flex items-center gap-1">
-                                <MapPin size={11} />
+                                <MapPin size={10} />
                                 {event.city}
                               </span>
                             </div>
                           )}
                         </div>
-                        <span className={`text-xs px-2.5 py-1 rounded-full font-medium flex-shrink-0 ${
-                          ticket.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'
+                        <span className={`text-xs px-2.5 py-1 rounded-full font-medium flex-shrink-0 border ${
+                          ticket.status === 'active'
+                            ? 'bg-[#D4FF00]/10 text-[#D4FF00] border-[#D4FF00]/20'
+                            : 'bg-white/[0.04] text-white/30 border-white/[0.06]'
                         }`}>
                           {ticket.status === 'active' ? '✓ Активен' : ticket.status}
                         </span>
                       </div>
                     </div>
                   </div>
-                  <div className="border-t border-dashed border-gray-200 px-4 py-3 flex items-center justify-between bg-gray-50/50">
-                    <div className="flex items-center gap-4 text-sm text-gray-600">
-                      <span>{ticket.quantity} {ticket.quantity === 1 ? 'билет' : 'билета'}</span>
-                      <span className="font-bold text-emerald-600">{formatPrice(ticket.totalPrice)}</span>
+
+                  {/* Ticket tear line */}
+                  <div className="relative mx-4 border-t border-dashed border-white/[0.06]">
+                    <div className="absolute -left-4 -top-2 w-4 h-4 rounded-full bg-[#0c0c0c]" />
+                    <div className="absolute -right-4 -top-2 w-4 h-4 rounded-full bg-[#0c0c0c]" />
+                  </div>
+
+                  <div className="px-4 py-3 flex items-center justify-between bg-white/[0.02]">
+                    <div className="flex items-center gap-4 text-sm">
+                      <span className="text-white/40">{ticket.quantity} {ticket.quantity === 1 ? 'билет' : 'билета'}</span>
+                      <span className="font-bold text-[#D4FF00]">{formatPrice(ticket.totalPrice)}</span>
                     </div>
-                    <div className="flex items-center gap-1 text-xs text-gray-400">
-                      <Clock size={11} />
+                    <div className="flex items-center gap-1.5 text-xs text-white/20">
+                      <Clock size={10} />
                       {formatDate(ticket.purchasedAt)}
                     </div>
                   </div>
@@ -260,63 +297,61 @@ function DashboardContent() {
       {tab === 'events' && (
         <div>
           <div className="flex items-center justify-between mb-5">
-            <p className="text-gray-500 text-sm">Созданные вами мероприятия</p>
+            <p className="text-white/30 text-sm">Созданные вами мероприятия</p>
             <Link
               href="/create-event"
-              className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 bg-[#D4FF00] text-black text-sm font-bold rounded-xl hover:bg-[#c8f000] transition-colors"
             >
-              <Plus size={15} />
+              <Plus size={14} />
               Создать
             </Link>
           </div>
           {events.length === 0 ? (
             <div className="text-center py-24">
               <p className="text-5xl mb-4">📅</p>
-              <p className="text-xl font-semibold text-gray-700 mb-2">Нет созданных событий</p>
-              <p className="text-gray-400 mb-6 text-sm">Создайте первое мероприятие и начните продавать билеты</p>
-              <Link href="/create-event" className="px-6 py-3 bg-emerald-600 text-white rounded-xl font-semibold text-sm hover:bg-emerald-700 transition-colors">
+              <p className="text-xl font-semibold text-white/50 mb-2">Нет созданных событий</p>
+              <p className="text-white/25 mb-6 text-sm">Создайте первое мероприятие</p>
+              <Link href="/create-event" className="px-6 py-3 bg-[#D4FF00] text-black rounded-xl font-bold text-sm hover:bg-[#c8f000] transition-colors">
                 Создать мероприятие
               </Link>
             </div>
           ) : (
-            <div className="grid gap-4">
+            <div className="space-y-3">
               {events.map((event) => (
-                <div key={event.id} className="bg-white rounded-2xl border border-gray-200 p-4 flex gap-4 hover:border-emerald-300 transition-colors">
-                  <div className="w-24 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
-                    <img src={event.imageUrl} alt={event.title} className="w-full h-full object-cover" />
+                <div key={event.id} className="bg-[#141414] border border-white/[0.07] rounded-2xl p-4 flex gap-4 hover:border-[#D4FF00]/15 transition-colors">
+                  <div className="w-20 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-[#1a1a1a]">
+                    <img src={event.imageUrl} alt={event.title} className="w-full h-full object-cover opacity-80" />
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <h3
-                      className="font-bold text-gray-900 text-sm mb-1 cursor-pointer hover:text-emerald-600 transition-colors"
+                      className="font-bold text-white text-sm mb-1 cursor-pointer hover:text-[#D4FF00] transition-colors truncate"
                       onClick={() => setSelectedEvent(event)}
                     >
                       {event.title}
                     </h3>
-                    <div className="flex items-center gap-3 text-xs text-gray-500 mb-2">
+                    <div className="flex items-center gap-3 text-xs text-white/30 mb-2">
                       <span>{formatDate(event.date)}</span>
                       <span>{event.city}</span>
                       <span>{formatPrice(event.price)}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="flex-1 h-1 bg-white/[0.05] rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-emerald-500 rounded-full"
+                          className="h-full bg-[#D4FF00] rounded-full"
                           style={{ width: `${Math.round((event.soldTickets / event.totalTickets) * 100)}%` }}
                         />
                       </div>
-                      <span className="text-xs text-gray-500">
-                        {event.soldTickets}/{event.totalTickets} билетов
+                      <span className="text-xs text-white/25 flex-shrink-0">
+                        {event.soldTickets}/{event.totalTickets}
                       </span>
                     </div>
                   </div>
-                  <div className="flex flex-col gap-2">
-                    <button
-                      onClick={() => handleDeleteEvent(event.id)}
-                      className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => handleDeleteEvent(event.id)}
+                    className="p-2 text-white/20 hover:text-red-400 hover:bg-red-500/10 rounded-xl transition-all self-start"
+                  >
+                    <Trash2 size={15} />
+                  </button>
                 </div>
               ))}
             </div>
@@ -324,7 +359,33 @@ function DashboardContent() {
         </div>
       )}
 
-      <EventModal event={selectedEvent} onClose={() => setSelectedEvent(null)} />
+      {/* Wishlist tab */}
+      {tab === 'wishlist' && (
+        <div>
+          {wishlistEvents.length === 0 ? (
+            <div className="text-center py-24">
+              <p className="text-5xl mb-4">❤️</p>
+              <p className="text-xl font-semibold text-white/50 mb-2">Избранное пусто</p>
+              <p className="text-white/25 mb-6 text-sm">Добавляйте мероприятия в избранное, нажимая ♡ на карточке</p>
+              <Link href="/events" className="px-6 py-3 bg-[#D4FF00] text-black rounded-xl font-bold text-sm hover:bg-[#c8f000] transition-colors">
+                Смотреть мероприятия
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {wishlistEvents.map((event) => (
+                <EventCard key={event.id} event={event} onClick={setSelectedEvent} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      <EventModal
+        event={selectedEvent}
+        onClose={() => setSelectedEvent(null)}
+        onPurchased={loadData}
+      />
     </div>
   )
 }

@@ -1,8 +1,10 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { SportEvent, SPORT_LABELS, SPORT_EMOJIS, SPORT_COLORS } from '@/lib/types'
 import { formatDate, formatPrice, getAvailability } from '@/lib/utils'
-import { MapPin, Calendar, Ticket } from 'lucide-react'
+import { isInWishlist, toggleWishlist } from '@/lib/store'
+import { MapPin, Calendar, Heart } from 'lucide-react'
 
 interface Props {
   event: SportEvent
@@ -13,39 +15,66 @@ export default function EventCard({ event, onClick }: Props) {
   const { available, pct } = getAvailability(event.totalTickets, event.soldTickets)
   const isAlmostFull = pct >= 80
   const isFull = available === 0
+  const [wished, setWished] = useState(false)
+
+  useEffect(() => {
+    setWished(isInWishlist(event.id))
+  }, [event.id])
+
+  function handleWishlist(e: React.MouseEvent) {
+    e.stopPropagation()
+    const next = toggleWishlist(event.id)
+    setWished(next)
+  }
 
   return (
     <div
       onClick={() => onClick(event)}
-      className="bg-white rounded-2xl border border-gray-200 overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-xl hover:border-emerald-300 transition-all duration-200 flex flex-col"
+      className="group bg-[#141414] rounded-2xl border border-white/[0.06] overflow-hidden cursor-pointer hover:-translate-y-1.5 hover:border-[#D4FF00]/30 hover:shadow-[0_0_40px_rgba(212,255,0,0.06)] transition-all duration-200 flex flex-col"
     >
       {/* Image */}
-      <div className="relative h-48 overflow-hidden bg-gray-100">
+      <div className="relative h-44 overflow-hidden bg-[#1a1a1a] flex-shrink-0">
         <img
           src={event.imageUrl}
           alt={event.title}
-          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 opacity-80"
           onError={(e) => {
             const target = e.target as HTMLImageElement
             target.style.display = 'none'
             if (target.parentElement) {
-              target.parentElement.innerHTML = `<div class="w-full h-full flex items-center justify-center text-6xl bg-emerald-50">${SPORT_EMOJIS[event.sport]}</div>`
+              target.parentElement.innerHTML = `<div class="w-full h-full flex items-center justify-center text-5xl bg-[#1a1a1a]">${SPORT_EMOJIS[event.sport]}</div>`
             }
           }}
         />
-        <div className="absolute top-3 left-3 flex gap-2 flex-wrap">
-          <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${SPORT_COLORS[event.sport]}`}>
+        <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-transparent to-transparent opacity-70" />
+
+        {/* Badges */}
+        <div className="absolute top-3 left-3 flex gap-1.5 flex-wrap">
+          <span className={`px-2.5 py-1 rounded-full text-xs font-medium backdrop-blur-sm ${SPORT_COLORS[event.sport]}`}>
             {SPORT_EMOJIS[event.sport]} {SPORT_LABELS[event.sport]}
           </span>
           {event.featured && (
-            <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
-              ⭐ Топ
+            <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-[#D4FF00]/20 text-[#D4FF00] border border-[#D4FF00]/30 backdrop-blur-sm">
+              ТОП
             </span>
           )}
         </div>
+
+        {/* Wishlist button */}
+        <button
+          onClick={handleWishlist}
+          className={`absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-sm transition-all ${
+            wished
+              ? 'bg-red-500/20 border border-red-500/40 text-red-400'
+              : 'bg-black/30 border border-white/10 text-white/40 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/30'
+          }`}
+        >
+          <Heart size={13} fill={wished ? 'currentColor' : 'none'} />
+        </button>
+
         {isFull && (
-          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-            <span className="text-white font-bold text-lg bg-red-500 px-4 py-2 rounded-full">
+          <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+            <span className="text-white/70 font-semibold text-sm bg-white/10 border border-white/20 px-4 py-2 rounded-full backdrop-blur-sm">
               Билеты закончились
             </span>
           </div>
@@ -54,58 +83,49 @@ export default function EventCard({ event, onClick }: Props) {
 
       {/* Content */}
       <div className="p-4 flex flex-col flex-1">
-        <h3 className="font-bold text-gray-900 text-base leading-snug mb-3 line-clamp-2">
+        <h3 className="font-semibold text-white text-sm leading-snug mb-3 line-clamp-2 group-hover:text-white transition-colors">
           {event.title}
         </h3>
-        <div className="space-y-1.5 text-sm text-gray-500 mb-4">
-          <div className="flex items-center gap-1.5">
-            <Calendar size={14} className="text-emerald-500 flex-shrink-0" />
+        <div className="space-y-1.5 mb-4">
+          <div className="flex items-center gap-1.5 text-white/40 text-xs">
+            <Calendar size={11} className="text-[#D4FF00]/60 flex-shrink-0" />
             <span>
               {formatDate(event.date)}
               {event.endDate && event.endDate !== event.date && ` — ${formatDate(event.endDate)}`}
             </span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <MapPin size={14} className="text-emerald-500 flex-shrink-0" />
+          <div className="flex items-center gap-1.5 text-white/40 text-xs">
+            <MapPin size={11} className="text-[#D4FF00]/60 flex-shrink-0" />
             <span className="truncate">{event.city}, {event.location}</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Ticket size={14} className="text-emerald-500 flex-shrink-0" />
-            <span>
-              {isFull ? (
-                <span className="text-red-500 font-medium">Нет мест</span>
-              ) : (
-                <>
-                  <span className={isAlmostFull ? 'text-orange-500 font-medium' : ''}>
-                    {available.toLocaleString('ru')} мест
-                  </span>
-                  {isAlmostFull && !isFull && ' — почти нет'}
-                </>
-              )}
-            </span>
           </div>
         </div>
 
-        {/* Progress bar */}
+        {/* Progress */}
         <div className="mb-4">
-          <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+          <div className="h-1 bg-white/[0.06] rounded-full overflow-hidden">
             <div
-              className={`h-full rounded-full transition-all ${
-                pct >= 90 ? 'bg-red-500' : pct >= 70 ? 'bg-orange-500' : 'bg-emerald-500'
-              }`}
-              style={{ width: `${pct}%` }}
+              className="h-full rounded-full transition-all"
+              style={{
+                width: `${pct}%`,
+                background: pct >= 90 ? '#ef4444' : pct >= 70 ? '#f97316' : '#D4FF00',
+              }}
             />
           </div>
-          <p className="text-xs text-gray-400 mt-1">{pct}% продано</p>
+          <div className="flex justify-between mt-1.5">
+            <p className="text-[10px] text-white/25">{pct}% продано</p>
+            {isAlmostFull && !isFull && (
+              <p className="text-[10px] text-orange-400">Почти нет мест</p>
+            )}
+          </div>
         </div>
 
         {/* Price & CTA */}
         <div className="mt-auto flex items-center justify-between">
           <div>
-            <p className="text-xs text-gray-400">от</p>
-            <p className="text-lg font-bold text-emerald-600">{formatPrice(event.price)}</p>
+            <p className="text-[10px] text-white/25 uppercase tracking-wider">от</p>
+            <p className="text-base font-bold text-[#D4FF00]">{formatPrice(event.price)}</p>
           </div>
-          <button className="px-4 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 transition-colors">
+          <button className="px-4 py-2 bg-[#D4FF00]/10 text-[#D4FF00] border border-[#D4FF00]/20 text-xs font-semibold rounded-xl group-hover:bg-[#D4FF00] group-hover:text-black transition-all duration-200">
             Подробнее
           </button>
         </div>

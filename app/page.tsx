@@ -5,10 +5,10 @@ import { useRouter } from 'next/navigation'
 import { getEvents } from '@/lib/store'
 import { SportEvent, Sport, SPORT_LABELS, SPORT_EMOJIS } from '@/lib/types'
 import { CITIES } from '@/lib/mockData'
-import { formatDate, formatPrice } from '@/lib/utils'
+import { formatPrice } from '@/lib/utils'
 import EventCard from '@/components/EventCard'
 import EventModal from '@/components/EventModal'
-import { Search, MapPin, Calendar, TrendingUp, Users, Ticket, ArrowRight, ChevronRight } from 'lucide-react'
+import { Search, MapPin, ArrowRight, Zap, TrendingUp, Shield } from 'lucide-react'
 
 const SPORTS_NAV: { sport: Sport | 'all'; label: string; emoji: string }[] = [
   { sport: 'all', label: 'Все', emoji: '🏅' },
@@ -16,10 +16,10 @@ const SPORTS_NAV: { sport: Sport | 'all'; label: string; emoji: string }[] = [
   { sport: 'running', label: 'Бег', emoji: '🏃' },
   { sport: 'basketball', label: 'Баскетбол', emoji: '🏀' },
   { sport: 'tennis', label: 'Теннис', emoji: '🎾' },
-  { sport: 'swimming', label: 'Плавание', emoji: '🏊' },
   { sport: 'hockey', label: 'Хоккей', emoji: '🏒' },
-  { sport: 'yoga', label: 'Йога', emoji: '🧘' },
   { sport: 'boxing', label: 'Бокс', emoji: '🥊' },
+  { sport: 'cycling', label: 'Вело', emoji: '🚴' },
+  { sport: 'yoga', label: 'Йога', emoji: '🧘' },
 ]
 
 export default function HomePage() {
@@ -36,9 +36,9 @@ export default function HomePage() {
 
   const featured = events.filter((e) => e.featured)
   const filtered = events.filter((e) => {
-    const matchSport = activeSport === 'all' || e.sport === activeSport
-    const matchCity = !searchCity || e.city === searchCity
-    return matchSport && matchCity
+    if (activeSport !== 'all' && e.sport !== activeSport) return false
+    if (searchCity && e.city !== searchCity) return false
+    return true
   })
 
   function handleSearch(e: React.FormEvent) {
@@ -59,87 +59,105 @@ export default function HomePage() {
   return (
     <>
       {/* Hero */}
-      <section className="relative bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-700 text-white overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-10 right-10 w-72 h-72 rounded-full bg-white blur-3xl" />
-          <div className="absolute bottom-10 left-10 w-96 h-96 rounded-full bg-emerald-300 blur-3xl" />
+      <section className="relative min-h-[88vh] flex items-center overflow-hidden">
+        {/* Background */}
+        <div className="absolute inset-0 bg-[#080808]">
+          <div className="absolute inset-0" style={{
+            backgroundImage: 'radial-gradient(ellipse 80% 50% at 50% -10%, rgba(212,255,0,0.08) 0%, transparent 60%)',
+          }} />
+          <div className="absolute inset-0 opacity-[0.03]" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h60v60H0z' fill='none'/%3E%3Cpath d='M0 0v60M60 0v60M0 0h60M0 60h60' stroke='%23fff' stroke-width='0.5'/%3E%3C/svg%3E")`,
+          }} />
         </div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
-          <p className="text-emerald-300 text-sm font-semibold uppercase tracking-widest mb-4">
-            Маркетплейс спортивных мероприятий
-          </p>
-          <h1 className="font-display text-5xl sm:text-7xl font-bold mb-6 leading-tight">
-            Найди своё<br />
-            <span className="text-emerald-300">событие</span>
-          </h1>
-          <p className="text-xl text-emerald-100 mb-10 max-w-2xl mx-auto">
-            Билеты на спортивные мероприятия по всей России. Футбол, марафоны, хоккей, теннис и многое другое.
-          </p>
 
-          {/* Search bar */}
-          <form
-            onSubmit={handleSearch}
-            className="bg-white rounded-2xl p-2 flex flex-col sm:flex-row gap-2 max-w-2xl mx-auto shadow-2xl"
-          >
-            <div className="flex items-center gap-2 flex-1 px-3">
-              <Search size={18} className="text-gray-400 flex-shrink-0" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Поиск мероприятий..."
-                className="flex-1 text-gray-800 placeholder-gray-400 text-sm outline-none bg-transparent py-2"
-              />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 w-full">
+          <div className="max-w-4xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#D4FF00]/10 border border-[#D4FF00]/20 rounded-full mb-8">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#D4FF00] animate-pulse" />
+              <span className="text-[#D4FF00] text-xs font-medium tracking-widest uppercase">
+                Маркетплейс спортивных мероприятий
+              </span>
             </div>
-            <div className="flex items-center gap-2 border-l border-gray-100 px-3 sm:w-44">
-              <MapPin size={16} className="text-gray-400 flex-shrink-0" />
-              <select
-                value={searchCity}
-                onChange={(e) => setSearchCity(e.target.value)}
-                className="text-sm text-gray-600 outline-none bg-transparent flex-1"
-              >
-                <option value="">Все города</option>
-                {CITIES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-            </div>
-            <button
-              type="submit"
-              className="px-6 py-3 bg-emerald-600 text-white text-sm font-bold rounded-xl hover:bg-emerald-700 transition-colors"
+
+            <h1 className="font-display text-7xl sm:text-8xl lg:text-[110px] font-normal text-white leading-[0.9] tracking-wide mb-8">
+              НАЙДИ<br />
+              СВОЁ <span className="text-[#D4FF00]">СОБЫТИЕ</span>
+            </h1>
+
+            <p className="text-white/40 text-lg sm:text-xl mb-10 max-w-xl leading-relaxed">
+              Билеты на спортивные мероприятия по всей России — футбол, марафоны, единоборства и многое другое.
+            </p>
+
+            {/* Search */}
+            <form
+              onSubmit={handleSearch}
+              className="flex flex-col sm:flex-row gap-3 max-w-2xl"
             >
-              Найти
-            </button>
-          </form>
-
-          {/* Stats */}
-          <div className="flex justify-center gap-10 mt-12 text-center">
-            {[
-              { icon: <Calendar size={20} />, value: stats.events, label: 'Мероприятий' },
-              { icon: <MapPin size={20} />, value: stats.cities, label: 'Городов' },
-              { icon: <Ticket size={20} />, value: stats.tickets.toLocaleString('ru'), label: 'Билетов продано' },
-            ].map((s, i) => (
-              <div key={i} className="flex flex-col items-center gap-1">
-                <div className="text-emerald-300">{s.icon}</div>
-                <p className="text-3xl font-display font-bold">{s.value}</p>
-                <p className="text-emerald-200 text-xs">{s.label}</p>
+              <div className="flex-1 flex items-center gap-2 bg-white/[0.06] border border-white/10 rounded-2xl px-4 py-3.5 focus-within:border-[#D4FF00]/40 transition-colors">
+                <Search size={16} className="text-white/30 flex-shrink-0" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Поиск мероприятий..."
+                  className="flex-1 bg-transparent text-white placeholder-white/25 text-sm outline-none"
+                />
               </div>
-            ))}
+              <div className="flex items-center gap-2 bg-white/[0.06] border border-white/10 rounded-2xl px-4 py-3.5 sm:w-44 focus-within:border-[#D4FF00]/40 transition-colors">
+                <MapPin size={14} className="text-white/30 flex-shrink-0" />
+                <select
+                  value={searchCity}
+                  onChange={(e) => setSearchCity(e.target.value)}
+                  className="text-sm text-white/50 bg-transparent outline-none flex-1 cursor-pointer"
+                >
+                  <option value="">Все города</option>
+                  {CITIES.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
+              <button
+                type="submit"
+                className="px-8 py-3.5 bg-[#D4FF00] text-black font-bold rounded-2xl hover:bg-[#c8f000] transition-colors text-sm"
+              >
+                Найти
+              </button>
+            </form>
+
+            {/* Stats */}
+            <div className="flex gap-8 mt-12">
+              {[
+                { value: `${stats.events}+`, label: 'Мероприятий' },
+                { value: `${stats.cities}`, label: 'Городов' },
+                { value: `${stats.tickets.toLocaleString('ru')}`, label: 'Билетов продано' },
+              ].map((s) => (
+                <div key={s.label}>
+                  <p className="font-display text-4xl text-white">{s.value}</p>
+                  <p className="text-white/30 text-xs uppercase tracking-wider mt-1">{s.label}</p>
+                </div>
+              ))}
+            </div>
           </div>
+        </div>
+
+        {/* Scroll indicator */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/20">
+          <span className="text-xs uppercase tracking-widest">Прокрути</span>
+          <div className="w-px h-8 bg-gradient-to-b from-white/20 to-transparent" />
         </div>
       </section>
 
-      {/* Sport categories */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      {/* Sport filter tabs */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
           {SPORTS_NAV.map((s) => (
             <button
               key={s.sport}
               onClick={() => setActiveSport(s.sport)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all flex-shrink-0 ${
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap flex-shrink-0 transition-all border ${
                 activeSport === s.sport
-                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-200'
-                  : 'bg-white border border-gray-200 text-gray-600 hover:border-emerald-300'
+                  ? 'bg-[#D4FF00] text-black border-transparent'
+                  : 'bg-white/[0.04] border-white/[0.06] text-white/50 hover:text-white hover:border-white/10'
               }`}
             >
               <span>{s.emoji}</span>
@@ -151,20 +169,20 @@ export default function HomePage() {
 
       {/* Featured events */}
       {featured.length > 0 && activeSport === 'all' && !searchCity && (
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">⭐ Топ мероприятия</h2>
-              <p className="text-gray-500 text-sm mt-1">Самые популярные события этого сезона</p>
+              <h2 className="text-2xl font-bold text-white">Топ мероприятия</h2>
+              <p className="text-white/30 text-sm mt-1">Самые популярные события сезона</p>
             </div>
             <button
               onClick={() => router.push('/events')}
-              className="flex items-center gap-1 text-sm font-medium text-emerald-600 hover:text-emerald-700"
+              className="flex items-center gap-1.5 text-sm font-medium text-[#D4FF00]/70 hover:text-[#D4FF00] transition-colors"
             >
-              Все <ChevronRight size={16} />
+              Все <ArrowRight size={14} />
             </button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {featured.slice(0, 3).map((event) => (
               <EventCard key={event.id} event={event} onClick={setSelectedEvent} />
             ))}
@@ -173,30 +191,31 @@ export default function HomePage() {
       )}
 
       {/* Filtered events */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-2xl font-bold text-white">
               {activeSport !== 'all'
                 ? `${SPORT_EMOJIS[activeSport]} ${SPORT_LABELS[activeSport]}`
-                : '🗓️ Все мероприятия'}
+                : 'Все мероприятия'}
             </h2>
-            <p className="text-gray-500 text-sm mt-1">
-              Найдено: {filtered.length} {filtered.length === 1 ? 'событие' : 'событий'}
+            <p className="text-white/30 text-sm mt-1">
+              {filtered.length} {filtered.length === 1 ? 'событие' : 'событий'}
             </p>
           </div>
           <button
             onClick={() => router.push('/events')}
-            className="flex items-center gap-1.5 text-sm font-semibold text-emerald-600 hover:text-emerald-700"
+            className="flex items-center gap-1.5 text-sm font-medium text-white/30 hover:text-white/60 transition-colors"
           >
-            Каталог <ArrowRight size={15} />
+            Каталог <ArrowRight size={14} />
           </button>
         </div>
+
         {filtered.length === 0 ? (
-          <div className="text-center py-20 text-gray-400">
-            <p className="text-4xl mb-4">🔍</p>
-            <p className="text-lg font-medium">Ничего не найдено</p>
-            <p className="text-sm">Попробуйте изменить фильтры</p>
+          <div className="text-center py-20 text-white/20">
+            <p className="text-5xl mb-4">🔍</p>
+            <p className="text-lg font-medium text-white/40">Ничего не найдено</p>
+            <p className="text-sm mt-1">Попробуйте изменить фильтры</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
@@ -205,11 +224,12 @@ export default function HomePage() {
             ))}
           </div>
         )}
+
         {filtered.length > 8 && (
-          <div className="text-center mt-8">
+          <div className="text-center mt-10">
             <button
               onClick={() => router.push('/events')}
-              className="px-8 py-3 border-2 border-emerald-600 text-emerald-600 font-bold rounded-xl hover:bg-emerald-50 transition-colors"
+              className="px-8 py-3.5 border border-white/10 text-white/60 font-semibold rounded-2xl hover:border-[#D4FF00]/30 hover:text-[#D4FF00] transition-all"
             >
               Показать все {filtered.length} мероприятий
             </button>
@@ -217,24 +237,46 @@ export default function HomePage() {
         )}
       </section>
 
-      {/* How it works */}
-      <section className="bg-white py-16 border-t border-gray-100">
+      {/* Features section */}
+      <section className="border-t border-white/[0.05] py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center text-gray-900 mb-2">Как это работает</h2>
-          <p className="text-center text-gray-500 mb-12">Купить билет просто</p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="text-center mb-14">
+            <h2 className="font-display text-5xl text-white mb-3">КАК ЭТО РАБОТАЕТ</h2>
+            <p className="text-white/30">Купить билет — просто</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              { step: '01', title: 'Найди мероприятие', desc: 'Используй фильтры по виду спорта, городу и дате', icon: '🔍' },
-              { step: '02', title: 'Купи билет', desc: 'Оплати онлайн за несколько секунд', icon: '🎫' },
-              { step: '03', title: 'Иди и радуйся', desc: 'Билеты всегда доступны в личном кабинете', icon: '🎉' },
+              {
+                icon: <Search size={22} />,
+                step: '01',
+                title: 'Найди мероприятие',
+                desc: 'Фильтры по виду спорта, городу, дате и цене — найди именно то, что тебе нужно.',
+              },
+              {
+                icon: <Zap size={22} />,
+                step: '02',
+                title: 'Купи билет',
+                desc: 'Мгновенная покупка без лишних шагов. Все данные сохранятся в личном кабинете.',
+              },
+              {
+                icon: <Shield size={22} />,
+                step: '03',
+                title: 'Иди на событие',
+                desc: 'Электронный билет всегда с тобой. Просто покажи на входе и наслаждайся.',
+              },
             ].map((item) => (
-              <div key={item.step} className="flex flex-col items-center text-center">
-                <div className="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center text-3xl mb-4">
-                  {item.icon}
+              <div
+                key={item.step}
+                className="bg-[#141414] border border-white/[0.06] rounded-2xl p-7 hover:border-[#D4FF00]/20 transition-colors group"
+              >
+                <div className="flex items-start justify-between mb-5">
+                  <div className="w-11 h-11 rounded-xl bg-[#D4FF00]/10 border border-[#D4FF00]/20 flex items-center justify-center text-[#D4FF00] group-hover:bg-[#D4FF00]/20 transition-colors">
+                    {item.icon}
+                  </div>
+                  <span className="font-display text-4xl text-white/[0.06]">{item.step}</span>
                 </div>
-                <p className="text-xs font-bold text-emerald-500 mb-1 tracking-widest">{item.step}</p>
-                <h3 className="text-lg font-bold text-gray-900 mb-2">{item.title}</h3>
-                <p className="text-gray-500 text-sm">{item.desc}</p>
+                <h3 className="text-base font-bold text-white mb-2">{item.title}</h3>
+                <p className="text-white/35 text-sm leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -243,17 +285,28 @@ export default function HomePage() {
 
       {/* CTA */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-3xl p-10 text-white text-center">
-          <h2 className="text-3xl font-bold mb-3">Проводишь мероприятие?</h2>
-          <p className="text-emerald-100 mb-6 max-w-lg mx-auto">
-            Разместите своё событие на платформе и продавайте билеты тысячам любителей спорта
-          </p>
-          <button
-            onClick={() => router.push('/create-event')}
-            className="px-8 py-3.5 bg-white text-emerald-700 font-bold rounded-xl hover:bg-emerald-50 transition-colors"
-          >
-            Создать мероприятие →
-          </button>
+        <div
+          className="rounded-3xl p-10 sm:p-14 text-center overflow-hidden relative"
+          style={{ background: 'linear-gradient(135deg, #1a1a00 0%, #141400 50%, #0c0c0c 100%)' }}
+        >
+          <div className="absolute inset-0" style={{
+            backgroundImage: 'radial-gradient(ellipse 60% 80% at 50% 50%, rgba(212,255,0,0.07) 0%, transparent 70%)',
+          }} />
+          <div className="relative">
+            <p className="text-[#D4FF00]/60 text-xs uppercase tracking-widest mb-4">Для организаторов</p>
+            <h2 className="font-display text-5xl sm:text-6xl text-white mb-4">
+              ПРОВОДИШЬ<br />МЕРОПРИЯТИЕ?
+            </h2>
+            <p className="text-white/40 mb-8 max-w-md mx-auto text-sm leading-relaxed">
+              Разместите своё событие на платформе бесплатно и продавайте билеты тысячам любителей спорта по всей России
+            </p>
+            <button
+              onClick={() => router.push('/create-event')}
+              className="px-8 py-4 bg-[#D4FF00] text-black font-bold rounded-2xl hover:bg-[#c8f000] transition-colors text-sm"
+            >
+              Создать мероприятие →
+            </button>
+          </div>
         </div>
       </section>
 

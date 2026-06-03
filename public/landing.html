@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SportMarket — Маркетплейс спортивных мероприятий</title>
+  <meta name="description" content="Билеты на лучшие спортивные мероприятия России. Футбол, марафоны, хоккей, теннис и многое другое.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ============================================================
+       DESIGN SYSTEM
+    ============================================================ */
+    :root {
+      --bg:         #080808;
+      --bg-2:       #0d0d0d;
+      --bg-3:       #111111;
+      --accent:     #D4FF00;
+      --accent-dim: rgba(212,255,0,0.08);
+      --accent-glow:rgba(212,255,0,0.25);
+      --text:       #F2EDE6;
+      --text-muted: #777772;
+      --text-dim:   rgba(242,237,230,0.35);
+      --border:     rgba(255,255,255,0.07);
+      --border-a:   rgba(212,255,0,0.22);
+
+      --ff-display: 'Bebas Neue', sans-serif;
+      --ff-body:    'DM Sans', sans-serif;
+      --ff-mono:    'Space Mono', monospace;
+
+      --hero-fs:    clamp(72px, 11.5vw, 152px);
+      --title-fs:   clamp(38px, 5.5vw, 76px);
+      --body-fs:    clamp(14px, 1.4vw, 16px);
+      --label-fs:   clamp(9px, 0.85vw, 11px);
+
+      --r:    16px;
+      --r-sm:  8px;
+      --r-lg: 24px;
+      --ease: cubic-bezier(0.19,1,0.22,1);
+    }
+
+    /* ============================================================
+       RESET
+    ============================================================ */
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html{overflow-x:hidden;scroll-behavior:auto;}
+    body{
+      background:var(--bg);
+      color:var(--text);
+      font-family:var(--ff-body);
+      font-size:var(--body-fs);
+      line-height:1.6;
+      overflow-x:hidden;
+      cursor:none;
+      -webkit-font-smoothing:antialiased;
+    }
+    a{color:inherit;text-decoration:none;}
+    img{max-width:100%;display:block;}
+    ::selection{background:var(--accent);color:var(--bg);}
+
+    /* ============================================================
+       GRAIN OVERLAY
+    ============================================================ */
+    body::after{
+      content:'';
+      position:fixed;inset:0;
+      z-index:9990;
+      pointer-events:none;
+      opacity:.038;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size:220px 220px;
+    }
+
+    /* ============================================================
+       MESH BACKGROUND
+    ============================================================ */
+    .mesh{
+      position:fixed;inset:0;z-index:-1;
+      background:var(--bg);
+    }
+    .mesh::before{
+      content:'';position:absolute;inset:0;
+      background:
+        radial-gradient(ellipse 70% 50% at 15% 25%,  rgba(212,255,0,.055) 0%,transparent 65%),
+        radial-gradient(ellipse 55% 70% at 85% 75%,  rgba(212,255,0,.035) 0%,transparent 65%),
+        radial-gradient(ellipse 45% 35% at 55% 50%,  rgba(255,100,30,.025) 0%,transparent 65%);
+    }
+
+    /* ============================================================
+       SCROLL PROGRESS
+    ============================================================ */
+    #prog{
+      position:fixed;top:0;left:0;height:2px;width:0;
+      background:linear-gradient(90deg,var(--accent),rgba(212,255,0,.4));
+      z-index:9999;will-change:width;
+    }
+
+    /* ============================================================
+       CURSOR
+    ============================================================ */
+    #cring{
+      position:fixed;top:0;left:0;width:40px;height:40px;
+      border:1.5px solid rgba(212,255,0,.55);
+      border-radius:50%;pointer-events:none;z-index:9998;
+      transform:translate(-50%,-50%);
+      transition:width .25s var(--ease),height .25s var(--ease),
+                 background .25s,border-color .25s,opacity .3s;
+      will-change:transform;
+    }
+    #cring.big{width:64px;height:64px;background:rgba(212,255,0,.07);border-color:var(--accent);}
+    #cdot{
+      position:fixed;top:0;left:0;width:6px;height:6px;
+      background:var(--accent);border-radius:50%;
+      pointer-events:none;z-index:9999;
+      transform:translate(-50%,-50%);
+      will-change:transform;
+    }
+
+    /* ============================================================
+       NAV
+    ============================================================ */
+    #nav{
+      position:fixed;top:0;left:0;right:0;z-index:800;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:22px 48px;
+      transition:padding .4s var(--ease),background .4s,border-color .4s;
+    }
+    #nav.stuck{
+      padding:13px 48px;
+      background:rgba(8,8,8,.88);
+      backdrop-filter:blur(24px);
+      -webkit-backdrop-filter:blur(24px);
+      border-bottom:1px solid var(--border);
+    }
+    .logo{
+      font-family:var(--ff-display);font-size:20px;
+      letter-spacing:2.5px;color:var(--text);
+      display:flex;align-items:center;gap:7px;
+    }
+    .logo em{color:var(--accent);font-style:normal;}
+    .nav-links{display:flex;align-items:center;gap:36px;list-style:none;}
+    .nav-links a{
+      font-size:13px;font-weight:500;color:var(--text-muted);
+      letter-spacing:.4px;position:relative;
+      transition:color .2s;
+    }
+    .nav-links a::after{
+      content:'';position:absolute;bottom:-3px;left:0;right:100%;
+      height:1px;background:var(--accent);
+      transition:right .35s var(--ease);
+    }
+    .nav-links a:hover{color:var(--text);}
+    .nav-links a:hover::after{right:0;}
+    .nav-btn{
+      padding:10px 26px;
+      background:var(--accent);color:var(--bg);
+      border-radius:var(--r-sm);
+      font-size:13px;font-weight:700;letter-spacing:.4px;
+      transition:transform .25s var(--ease),box-shadow .25s;
+    }
+    .nav-btn:hover{
+      transform:translateY(-2px);
+      box-shadow:0 10px 28px rgba(212,255,0,.32);
+    }
+    @media(max-width:768px){
+      #nav{padding:15px 20px;}
+      .nav-links{display:none;}
+    }
+
+    /* ============================================================
+       HERO
+    ============================================================ */
+    .hero{
+      min-height:100vh;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      align-items:center;
+      padding:148px 48px 90px;
+      gap:48px;
+    }
+    @media(max-width:960px){
+      .hero{grid-template-columns:1fr;padding:120px 20px 70px;}
+    }
+
+    .hero-tag{
+      font-family:var(--ff-mono);
+      font-size:var(--label-fs);
+      color:var(--accent);
+      letter-spacing:3.5px;
+      text-transform:uppercase;
+      margin-bottom:22px;
+      display:flex;align-items:center;gap:14px;
+    }
+    .hero-tag::before{content:'';width:28px;height:1px;background:var(--accent);}
+
+    .hero-h1{
+      font-family:var(--ff-display);
+      font-size:var(--hero-fs);
+      line-height:.91;
+      letter-spacing:.5px;
+      color:var(--text);
+      margin-bottom:30px;
+    }
+    .hero-h1 .line{overflow:hidden;display:block;}
+    .hero-h1 .line > span{display:inline-block;transform:translateY(108%);}
+    .hero-h1 .hi{color:var(--accent);}
+
+    .hero-desc{
+      font-size:clamp(15px,1.7vw,18px);font-weight:300;
+      color:var(--text-muted);max-width:400px;line-height:1.75;
+      margin-bottom:38px;opacity:0;transform:translateY(18px);
+    }
+    .hero-btns{
+      display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+      opacity:0;transform:translateY(18px);
+    }
+    .btn-p{
+      padding:15px 34px;
+      background:var(--accent);color:var(--bg);
+      font-family:var(--ff-body);font-weight:700;font-size:14px;
+      letter-spacing:.3px;border:none;border-radius:var(--r);
+      cursor:none;position:relative;overflow:hidden;
+      transition:transform .3s var(--ease),box-shadow .3s;
+    }
+    .btn-p::before{
+      content:'';position:absolute;inset:0;
+      background:rgba(255,255,255,.18);
+      transform:translateX(-110%) skewX(-15deg);
+      transition:transform .4s var(--ease);
+    }
+    .btn-p:hover{
+      transform:translateY(-3px);
+      box-shadow:0 18px 44px rgba(212,255,0,.36);
+    }
+    .btn-p:hover::before{transform:translateX(110%) skewX(-15deg);}
+    .btn-g{
+      padding:15px 34px;
+      background:transparent;color:var(--text);
+      font-family:var(--ff-body);font-weight:500;font-size:14px;
+      letter-spacing:.3px;border:1px solid var(--border);
+      border-radius:var(--r);cursor:none;
+      transition:background .3s,border-color .3s;
+    }
+    .btn-g:hover{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.18);}
+
+    .hero-kpis{
+      display:flex;gap:40px;
+      margin-top:56px;padding-top:36px;
+      border-top:1px solid var(--border);
+      opacity:0;
+    }
+    .kpi-v{
+      font-family:var(--ff-display);font-size:34px;
+      color:var(--text);letter-spacing:1px;display:block;
+    }
+    .kpi-l{
+      font-family:var(--ff-mono);font-size:9px;
+      color:var(--text-muted);letter-spacing:2px;
+      text-transform:uppercase;
+    }
+
+    /* Hero visual */
+    .hero-vis{
+      display:flex;justify-content:center;align-items:center;
+      position:relative;opacity:0;
+    }
+    .hcard{
+      width:100%;max-width:348px;
+      background:rgba(212,255,0,.045);
+      border:1px solid rgba(212,255,0,.14);
+      border-radius:22px;padding:26px;
+      backdrop-filter:blur(18px);
+      position:relative;overflow:hidden;
+    }
+    .hcard::before{
+      content:'';position:absolute;top:0;left:0;right:0;height:1px;
+      background:linear-gradient(90deg,transparent,rgba(212,255,0,.45),transparent);
+    }
+    .hcard-sport{
+      display:flex;align-items:center;gap:10px;margin-bottom:16px;
+    }
+    .hcard-sport .e{font-size:26px;}
+    .hcard-sport .l{
+      font-family:var(--ff-mono);font-size:10px;
+      color:var(--accent);letter-spacing:2px;text-transform:uppercase;
+    }
+    .hcard-title{
+      font-family:var(--ff-display);font-size:24px;
+      color:var(--text);margin-bottom:16px;line-height:1.05;
+    }
+    .hcard-row{
+      display:flex;align-items:center;gap:8px;
+      font-size:13px;color:var(--text-muted);margin-bottom:7px;
+    }
+    .hcard-row .ic{color:var(--accent);font-size:11px;}
+    .hcard-bar{
+      height:3px;background:rgba(255,255,255,.09);
+      border-radius:2px;margin:16px 0 6px;overflow:hidden;
+    }
+    .hcard-fill{
+      height:100%;width:76%;background:var(--accent);border-radius:2px;
+      position:relative;
+    }
+    .hcard-fill::after{
+      content:'';position:absolute;right:0;top:50%;
+      transform:translateY(-50%);width:7px;height:7px;
+      background:var(--accent);border-radius:50%;
+      box-shadow:0 0 10px var(--accent);
+    }
+    .hcard-meta{
+      display:flex;justify-content:space-between;
+      font-family:var(--ff-mono);font-size:10px;color:var(--text-muted);
+      margin-bottom:16px;
+    }
+    .hcard-meta .pct{color:var(--accent);}
+    .hcard-foot{
+      display:flex;align-items:center;justify-content:space-between;
+      padding-top:16px;border-top:1px solid rgba(255,255,255,.07);
+    }
+    .hcard-price{
+      font-family:var(--ff-display);font-size:30px;
+      color:var(--accent);letter-spacing:1px;
+    }
+    .hcard-price sub{
+      font-family:var(--ff-mono);font-size:10px;
+      color:var(--text-muted);letter-spacing:1px;
+    }
+    .hcard-cta{
+      padding:10px 18px;background:var(--accent);color:var(--bg);
+      border-radius:10px;font-weight:700;font-size:13px;
+      transition:transform .2s;
+    }
+    .hcard-cta:hover{transform:scale(1.06);}
+
+    .float-badge{
+      position:absolute;
+      background:rgba(14,14,14,.92);border:1px solid var(--border);
+      border-radius:10px;padding:10px 14px;backdrop-filter:blur(12px);
+      font-family:var(--ff-mono);font-size:11px;
+    }
+    .float-badge.f1{top:12px;right:-24px;color:var(--accent);}
+    .float-badge.f2{bottom:36px;left:-36px;color:var(--text-muted);}
+    @media(max-width:960px){.float-badge{display:none;}}
+
+    /* ============================================================
+       MARQUEE
+    ============================================================ */
+    .marquee-wrap{
+      overflow:hidden;
+      border-top:1px solid var(--border);
+      border-bottom:1px solid var(--border);
+      background:rgba(255,255,255,.014);
+      padding:28px 0;
+    }
+    .mq-row{overflow:hidden;}
+    .mq-row+.mq-row{margin-top:10px;}
+    .mq-track{
+      display:flex;white-space:nowrap;width:max-content;
+    }
+    .mq-track.fwd{animation:mq-fwd 36s linear infinite;}
+    .mq-track.rev{animation:mq-rev 30s linear infinite;}
+    @keyframes mq-fwd{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+    @keyframes mq-rev{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+    .mq-item{
+      display:inline-flex;align-items:center;gap:14px;
+      padding:0 28px;
+      font-family:var(--ff-display);
+      font-size:clamp(17px,2.2vw,24px);
+      letter-spacing:2px;color:var(--text-dim);
+      transition:color .2s;
+    }
+    .mq-item:hover{color:var(--text);}
+    .mq-sep{color:var(--accent);font-size:10px;}
+
+    /* ============================================================
+       SECTION SHARED
+    ============================================================ */
+    .section{padding:clamp(60px,8vw,110px) clamp(20px,4vw,80px);}
+    .s-tag{
+      font-family:var(--ff-mono);font-size:var(--label-fs);
+      color:var(--accent);letter-spacing:3.5px;text-transform:uppercase;
+      margin-bottom:14px;display:flex;align-items:center;gap:12px;
+    }
+    .s-tag::before{content:'';width:20px;height:1px;background:var(--accent);}
+    .s-title{
+      font-family:var(--ff-display);font-size:var(--title-fs);
+      color:var(--text);line-height:.98;letter-spacing:.5px;
+      margin-bottom:14px;
+    }
+    .s-title em{color:var(--accent);font-style:normal;}
+    .s-desc{
+      font-size:clamp(14px,1.5vw,17px);color:var(--text-muted);
+      max-width:480px;line-height:1.75;
+    }
+    .sec-head{
+      display:flex;justify-content:space-between;align-items:flex-end;
+      margin-bottom:44px;flex-wrap:wrap;gap:20px;
+    }
+    .link-more{
+      font-size:14px;font-weight:500;color:var(--text-muted);
+      border:1px solid var(--border);border-radius:var(--r-sm);
+      padding:10px 22px;transition:color .2s,border-color .2s,background .2s;
+    }
+    .link-more:hover{color:var(--text);border-color:rgba(255,255,255,.2);}
+
+    /* fade-up */
+    .fu{opacity:0;transform:translateY(36px);
+       transition:opacity .75s var(--ease),transform .75s var(--ease);}
+    .fu.in{opacity:1;transform:translateY(0);}
+
+    /* ============================================================
+       BENTO CATEGORIES
+    ============================================================ */
+    .bento-wrap{
+      clip-path:polygon(0 44px,100% 0,100% calc(100% - 44px),0 100%);
+      padding:clamp(80px,10vw,130px) clamp(20px,4vw,80px);
+      background:var(--bg-2);
+      margin:-44px 0;
+    }
+    .bento{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:10px;
+    }
+    @media(max-width:900px){.bento{grid-template-columns:repeat(2,1fr);}}
+
+    .bc{
+      background:rgba(255,255,255,.025);
+      border:1px solid var(--border);
+      border-radius:var(--r);
+      padding:24px 20px;
+      cursor:none;
+      position:relative;overflow:hidden;
+      display:flex;flex-direction:column;justify-content:space-between;
+      min-height:116px;
+      transition:background .3s,border-color .3s,
+                 transform .45s var(--ease),box-shadow .45s;
+    }
+    .bc:hover{
+      background:rgba(255,255,255,.05);
+      border-color:rgba(212,255,0,.22);
+      transform:translateY(-5px) rotate3d(1,0,0,1.2deg);
+      box-shadow:0 22px 48px rgba(0,0,0,.55),0 0 0 1px rgba(212,255,0,.1);
+    }
+    .bc-wide{grid-column:span 2;flex-direction:row;align-items:center;gap:22px;min-height:140px;}
+    .bc-hi{background:rgba(212,255,0,.06);border-color:rgba(212,255,0,.2);}
+    .bc-hi:hover{background:rgba(212,255,0,.12);}
+    .bc em{
+      font-size:clamp(34px,5vw,50px);line-height:1;
+      font-style:normal;display:block;margin-bottom:10px;
+    }
+    .bc-wide em{font-size:clamp(46px,7vw,66px);margin-bottom:0;}
+    .bc-name{
+      font-family:var(--ff-display);
+      font-size:clamp(18px,2.3vw,26px);
+      letter-spacing:1px;color:var(--text);line-height:1;
+    }
+    .bc-hi .bc-name{color:var(--accent);}
+    .bc-ct{
+      font-family:var(--ff-mono);font-size:9px;
+      color:var(--text-muted);letter-spacing:1.5px;margin-top:5px;
+    }
+    .bc-arr{
+      position:absolute;top:16px;right:16px;
+      width:26px;height:26px;border:1px solid var(--border);
+      border-radius:50%;display:flex;align-items:center;justify-content:center;
+      font-size:11px;color:var(--text-muted);
+      opacity:0;transform:translate(5px,-5px);
+      transition:opacity .3s,transform .3s;
+    }
+    .bc:hover .bc-arr{opacity:1;transform:translate(0,0);}
+
+    /* ============================================================
+       EVENT CARDS
+    ============================================================ */
+    .events-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(290px,1fr));
+      gap:18px;margin-top:44px;
+    }
+    .ec{
+      background:rgba(255,255,255,.025);
+      border:1px solid var(--border);
+      border-radius:18px;overflow:hidden;cursor:none;
+      transition:transform .45s var(--ease),box-shadow .45s,border-color .3s;
+    }
+    .ec:hover{
+      transform:translateY(-10px) rotate3d(0,1,0,1.2deg);
+      box-shadow:0 36px 68px rgba(0,0,0,.65);
+      border-color:rgba(212,255,0,.18);
+    }
+    .ec-img-w{position:relative;overflow:hidden;}
+    .ec-img{
+      width:100%;height:196px;object-fit:cover;display:block;
+      filter:brightness(.8) saturate(.8);
+      transition:filter .45s,transform .45s;
+    }
+    .ec:hover .ec-img{filter:brightness(1) saturate(1);transform:scale(1.05);}
+    .ec-badge{
+      position:absolute;top:12px;left:12px;
+      padding:4px 11px;
+      background:rgba(8,8,8,.82);backdrop-filter:blur(10px);
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:100px;
+      font-family:var(--ff-mono);font-size:9px;
+      letter-spacing:1.5px;color:var(--accent);text-transform:uppercase;
+    }
+    .ec-overlay{
+      position:absolute;inset:0;
+      background:linear-gradient(to top,rgba(8,8,8,.92) 0%,transparent 55%);
+      display:flex;flex-direction:column;justify-content:flex-end;
+      padding:16px;opacity:0;transition:opacity .3s;
+    }
+    .ec:hover .ec-overlay{opacity:1;}
+    .ec-ov-btn{
+      padding:11px;background:var(--accent);color:var(--bg);
+      border-radius:11px;font-weight:700;font-size:14px;text-align:center;
+    }
+    .ec-body{padding:18px;}
+    .ec-title{
+      font-family:var(--ff-display);
+      font-size:clamp(17px,2.3vw,21px);
+      letter-spacing:.5px;color:var(--text);line-height:1.15;
+      margin-bottom:10px;
+    }
+    .ec-row{
+      display:flex;align-items:center;gap:7px;
+      font-size:12.5px;color:var(--text-muted);margin-bottom:5px;
+    }
+    .ec-ic{color:var(--accent);font-size:11px;}
+    .ec-foot{
+      display:flex;align-items:center;justify-content:space-between;
+      padding-top:12px;border-top:1px solid var(--border);margin-top:10px;
+    }
+    .ec-price{
+      font-family:var(--ff-display);font-size:24px;
+      color:var(--accent);letter-spacing:1px;
+    }
+    .ec-seats{
+      font-family:var(--ff-mono);font-size:10px;
+      color:var(--text-muted);letter-spacing:1px;
+    }
+    .ec-prog{
+      height:2.5px;background:rgba(255,255,255,.07);
+      border-radius:2px;margin-top:8px;overflow:hidden;
+    }
+    .ec-prog-f{height:100%;background:var(--accent);border-radius:2px;}
+
+    /* ============================================================
+       STATS
+    ============================================================ */
+    .stats-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+      border:1px solid var(--border);
+      border-radius:20px;overflow:hidden;
+      gap:1px;background:var(--border);
+    }
+    .stat{
+      padding:44px 36px;background:var(--bg);text-align:center;
+      position:relative;
+    }
+    .stat::after{
+      content:'';position:absolute;inset:16px;border-radius:10px;
+      background:radial-gradient(ellipse at center,rgba(212,255,0,.038),transparent);
+      pointer-events:none;
+    }
+    .stat-n{
+      font-family:var(--ff-display);
+      font-size:clamp(44px,6vw,76px);
+      color:var(--text);letter-spacing:2px;line-height:1;display:block;
+    }
+    .stat-n .a{color:var(--accent);}
+    .stat-l{
+      font-family:var(--ff-mono);font-size:10px;
+      color:var(--text-muted);letter-spacing:2.5px;
+      text-transform:uppercase;margin-top:10px;display:block;
+    }
+
+    /* ============================================================
+       HOW IT WORKS
+    ============================================================ */
+    .steps{
+      display:grid;grid-template-columns:repeat(3,1fr);
+      gap:2px;background:var(--border);
+      border-radius:20px;overflow:hidden;margin-top:56px;
+    }
+    @media(max-width:680px){.steps{grid-template-columns:1fr;}}
+    .step{background:var(--bg-3);padding:44px 32px;position:relative;}
+    .step-n{
+      font-family:var(--ff-mono);font-size:10px;
+      color:var(--accent);letter-spacing:2px;
+      margin-bottom:24px;display:block;
+    }
+    .step-ico{font-size:38px;display:block;margin-bottom:16px;}
+    .step-h{
+      font-family:var(--ff-display);font-size:22px;
+      color:var(--text);letter-spacing:1px;margin-bottom:10px;
+    }
+    .step-d{font-size:13.5px;color:var(--text-muted);line-height:1.75;}
+
+    /* ============================================================
+       CTA BANNER
+    ============================================================ */
+    .cta-sec{
+      margin:0 clamp(20px,4vw,80px);
+      border-radius:28px;
+      padding:clamp(56px,8vw,96px) clamp(36px,5vw,72px);
+      background:rgba(212,255,0,.07);
+      border:1px solid var(--border-a);
+      position:relative;overflow:hidden;text-align:center;
+    }
+    .cta-sec::before{
+      content:'';position:absolute;inset:0;
+      background-image:repeating-linear-gradient(
+        -48deg,transparent,transparent 22px,
+        rgba(212,255,0,.022) 22px,rgba(212,255,0,.022) 23px
+      );
+    }
+    .cta-sec::after{
+      content:'';position:absolute;
+      top:-100px;left:50%;transform:translateX(-50%);
+      width:500px;height:500px;
+      background:radial-gradient(circle,rgba(212,255,0,.14),transparent 60%);
+      pointer-events:none;
+    }
+    .cta-h{
+      font-family:var(--ff-display);
+      font-size:clamp(44px,7.5vw,104px);
+      color:var(--text);letter-spacing:1px;line-height:.96;
+      margin-bottom:18px;position:relative;z-index:1;
+    }
+    .cta-h em{color:var(--accent);font-style:normal;}
+    .cta-d{
+      font-size:clamp(14px,1.7vw,18px);color:var(--text-muted);
+      margin-bottom:36px;max-width:460px;
+      margin-left:auto;margin-right:auto;
+      position:relative;z-index:1;
+    }
+    .cta-row{
+      display:flex;gap:14px;justify-content:center;flex-wrap:wrap;
+      position:relative;z-index:1;
+    }
+
+    /* ============================================================
+       FOOTER
+    ============================================================ */
+    footer{
+      padding:clamp(60px,8vw,100px) clamp(20px,4vw,80px) 40px;
+      border-top:1px solid var(--border);margin-top:80px;
+    }
+    .ft{
+      display:grid;
+      grid-template-columns:2fr 1fr 1fr 1fr;
+      gap:56px;margin-bottom:56px;
+    }
+    @media(max-width:900px){.ft{grid-template-columns:1fr 1fr;gap:36px;}}
+    @media(max-width:500px){.ft{grid-template-columns:1fr;}}
+    .ft-brand .fl{
+      font-family:var(--ff-display);font-size:22px;
+      letter-spacing:2px;color:var(--text);
+      margin-bottom:14px;display:block;
+    }
+    .ft-brand .fl em{color:var(--accent);font-style:normal;}
+    .ft-brand p{font-size:14px;color:var(--text-muted);line-height:1.7;max-width:240px;}
+    .ft-col h4{
+      font-family:var(--ff-mono);font-size:9px;
+      letter-spacing:3px;color:var(--text-muted);
+      text-transform:uppercase;margin-bottom:18px;
+    }
+    .ft-col ul{list-style:none;display:flex;flex-direction:column;gap:9px;}
+    .ft-col ul a{font-size:13px;color:var(--text-muted);transition:color .2s;}
+    .ft-col ul a:hover{color:var(--text);}
+    .fb{
+      padding-top:28px;border-top:1px solid var(--border);
+      display:flex;justify-content:space-between;align-items:center;
+      flex-wrap:wrap;gap:14px;
+    }
+    .fb-c{font-family:var(--ff-mono);font-size:11px;color:var(--text-muted);}
+    .fb-links{display:flex;gap:22px;}
+    .fb-links a{
+      font-family:var(--ff-mono);font-size:11px;
+      color:var(--text-muted);transition:color .2s;
+    }
+    .fb-links a:hover{color:var(--accent);}
+
+    /* ============================================================
+       SCROLLBAR
+    ============================================================ */
+    ::-webkit-scrollbar{width:3px;}
+    ::-webkit-scrollbar-track{background:var(--bg);}
+    ::-webkit-scrollbar-thumb{background:rgba(212,255,0,.28);border-radius:2px;}
+
+    /* ============================================================
+       UTILS
+    ============================================================ */
+    .mw{max-width:1300px;margin:0 auto;}
+  </style>
+</head>
+<body>
+
+<div class="mesh"></div>
+<div id="prog"></div>
+<div id="cring"></div>
+<div id="cdot"></div>
+
+<!-- ================================================================
+     NAV
+================================================================ -->
+<nav id="nav">
+  <a href="/BFF26/" class="logo">⚡ <em>Sport</em>Market</a>
+  <ul class="nav-links">
+    <li><a href="/BFF26/events/">Мероприятия</a></li>
+    <li><a href="/BFF26/events/?sport=running">Марафоны</a></li>
+    <li><a href="/BFF26/create-event/">Организаторам</a></li>
+  </ul>
+  <a href="/BFF26/auth/" class="nav-btn mag">Войти</a>
+</nav>
+
+<!-- ================================================================
+     HERO
+================================================================ -->
+<section class="hero">
+  <div>
+    <p class="hero-tag">Маркетплейс · Россия · 2026</p>
+    <h1 class="hero-h1">
+      <span class="line"><span>НАЙДИ</span></span>
+      <span class="line"><span>СВОЁ</span></span>
+      <span class="line hi"><span>СОБЫТИЕ</span></span>
+    </h1>
+    <p class="hero-desc">
+      Билеты на лучшие спортивные мероприятия страны. Футбол, марафоны, хоккей, теннис — всё в одном месте.
+    </p>
+    <div class="hero-btns">
+      <a href="/BFF26/events/" class="btn-p mag">Смотреть события</a>
+      <a href="/BFF26/create-event/" class="btn-g mag">Создать мероприятие</a>
+    </div>
+    <div class="hero-kpis">
+      <div>
+        <span class="kpi-v" data-cnt="10">0</span>
+        <span class="kpi-l">Мероприятий</span>
+      </div>
+      <div>
+        <span class="kpi-v" data-cnt="5">0</span>
+        <span class="kpi-l">Городов</span>
+      </div>
+      <div>
+        <span class="kpi-v" data-cnt="24600">0</span>
+        <span class="kpi-l">Билетов</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-vis">
+    <div class="float-badge f1">⚡ 3 820 билетов продано</div>
+    <div class="hcard">
+      <div class="hcard-sport">
+        <span class="e">⚽</span>
+        <span class="l">Футбол · Москва</span>
+      </div>
+      <div class="hcard-title">БОЛЬШОЙ ФУТБОЛЬНЫЙ ФЕСТИВАЛЬ 2026</div>
+      <div class="hcard-row"><span class="ic">📅</span> 4–7 августа 2026</div>
+      <div class="hcard-row"><span class="ic">📍</span> Стадион Лужники</div>
+      <div class="hcard-bar"><div class="hcard-fill"></div></div>
+      <div class="hcard-meta">
+        <span>3 820 / 5 000 билетов</span>
+        <span class="pct">76%</span>
+      </div>
+      <div class="hcard-foot">
+        <div class="hcard-price">500 ₽ <sub>/ билет</sub></div>
+        <a href="/BFF26/events/" class="hcard-cta">Купить →</a>
+      </div>
+    </div>
+    <div class="float-badge f2">🔥 Мест осталось: 1 180</div>
+  </div>
+</section>
+
+<!-- ================================================================
+     MARQUEE
+================================================================ -->
+<div class="marquee-wrap">
+  <div class="mq-row">
+    <div class="mq-track fwd">
+      <span class="mq-item">⚽ ФУТБОЛ <span class="mq-sep">✦</span></span>
+      <span class="mq-item">🏀 БАСКЕТБОЛ <span class="mq-sep">✦</span></span>
+      <span class="mq-item">🏃 МАРАФОН <span class="mq-sep">✦</span></span>
+      <span class="mq-item">🎾 ТЕННИС <span class="mq-sep">✦</span></span>
+      <span class="mq-item">🏊 ПЛАВАНИЕ <span class="mq-sep">✦</span></span>
+      <span class="mq-item">🏒 ХОККЕЙ <span class="mq-sep">✦</span></span>
+      <span class="mq-item">🥊 БОЙ <span class="mq-sep">✦</span></span>
+      <span class="mq-item">🧘 ЙОГА <span class="mq-sep">✦</span></span>
+      <span class="mq-item">⛷️ ЛЫЖИ <span class="mq-sep">✦</span></span>
+      <span class="mq-item">🏐 ВОЛЕЙБОЛ <span class="mq-sep">✦</span></span>
+      <span class="mq-item">⚽ ФУТБОЛ <span class="mq-sep">✦</span></span>
+      <span class="mq-item">🏀 БАСКЕТБОЛ <span class="mq-sep">✦</span></span>
+      <span class="mq-item">🏃 МАРАФОН <span class="mq-sep">✦</span></span>
+      <span class="mq-item">🎾 ТЕННИС <span class="mq-sep">✦</span></span>
+      <span class="mq-item">🏊 ПЛАВАНИЕ <span class="mq-sep">✦</span></span>
+      <span class="mq-item">🏒 ХОККЕЙ <span class="mq-sep">✦</span></span>
+      <span class="mq-item">🥊 БОЙ <span class="mq-sep">✦</span></span>
+      <span class="mq-item">🧘 ЙОГА <span class="mq-sep">✦</span></span>
+      <span class="mq-item">⛷️ ЛЫЖИ <span class="mq-sep">✦</span></span>
+      <span class="mq-item">🏐 ВОЛЕЙБОЛ <span class="mq-sep">✦</span></span>
+    </div>
+  </div>
+  <div class="mq-row">
+    <div class="mq-track rev">
+      <span class="mq-item">🌍 МОСКВА <span class="mq-sep">✦</span></span>
+      <span class="mq-item">🌍 САНКТ-ПЕТЕРБУРГ <span class="mq-sep">✦</span></span>
+      <span class="mq-item">🌍 КАЗАНЬ <span class="mq-sep">✦</span></span>
+      <span class="mq-item">🌍 ЕКАТЕРИНБУРГ <span class="mq-sep">✦</span></span>
+      <span class="mq-item">🌍 СОЧИ <span class="mq-sep">✦</span></span>
+      <span class="mq-item">🌍 НОВОСИБИРСК <span class="mq-sep">✦</span></span>
+      <span class="mq-item">🌍 КРАСНОДАР <span class="mq-sep">✦</span></span>
+      <span class="mq-item">🌍 НИЖНИЙ НОВГОРОД <span class="mq-sep">✦</span></span>
+      <span class="mq-item">🌍 МОСКВА <span class="mq-sep">✦</span></span>
+      <span class="mq-item">🌍 САНКТ-ПЕТЕРБУРГ <span class="mq-sep">✦</span></span>
+      <span class="mq-item">🌍 КАЗАНЬ <span class="mq-sep">✦</span></span>
+      <span class="mq-item">🌍 ЕКАТЕРИНБУРГ <span class="mq-sep">✦</span></span>
+      <span class="mq-item">🌍 СОЧИ <span class="mq-sep">✦</span></span>
+      <span class="mq-item">🌍 НОВОСИБИРСК <span class="mq-sep">✦</span></span>
+      <span class="mq-item">🌍 КРАСНОДАР <span class="mq-sep">✦</span></span>
+      <span class="mq-item">🌍 НИЖНИЙ НОВГОРОД <span class="mq-sep">✦</span></span>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     CATEGORIES BENTO
+================================================================ -->
+<div class="bento-wrap">
+  <div class="mw">
+    <div class="sec-head">
+      <div>
+        <p class="s-tag">Виды спорта</p>
+        <h2 class="s-title">Найди <em>свой</em> спорт</h2>
+      </div>
+      <a href="/BFF26/events/" class="link-more mag">Все виды →</a>
+    </div>
+    <div class="bento fu">
+      <a href="/BFF26/events/?sport=football" class="bc bc-wide bc-hi">
+        <em>⚽</em>
+        <div>
+          <div class="bc-name">ФУТБОЛ</div>
+          <div class="bc-ct">3 СОБЫТИЯ</div>
+        </div>
+        <span class="bc-arr">↗</span>
+      </a>
+      <a href="/BFF26/events/?sport=basketball" class="bc">
+        <em>🏀</em>
+        <div class="bc-name">БАСКЕТБОЛ</div>
+        <div class="bc-ct">1 СОБЫТИЕ</div>
+        <span class="bc-arr">↗</span>
+      </a>
+      <a href="/BFF26/events/?sport=running" class="bc">
+        <em>🏃</em>
+        <div class="bc-name">БЕГ</div>
+        <div class="bc-ct">1 СОБЫТИЕ</div>
+        <span class="bc-arr">↗</span>
+      </a>
+      <a href="/BFF26/events/?sport=tennis" class="bc">
+        <em>🎾</em>
+        <div class="bc-name">ТЕННИС</div>
+        <div class="bc-ct">1 СОБЫТИЕ</div>
+        <span class="bc-arr">↗</span>
+      </a>
+      <a href="/BFF26/events/?sport=swimming" class="bc">
+        <em>🏊</em>
+        <div class="bc-name">ПЛАВАНИЕ</div>
+        <div class="bc-ct">1 СОБЫТИЕ</div>
+        <span class="bc-arr">↗</span>
+      </a>
+      <a href="/BFF26/events/?sport=hockey" class="bc bc-wide">
+        <em>🏒</em>
+        <div>
+          <div class="bc-name">ХОККЕЙ</div>
+          <div class="bc-ct">1 СОБЫТИЕ · ЗИМА</div>
+        </div>
+        <span class="bc-arr">↗</span>
+      </a>
+      <a href="/BFF26/events/?sport=yoga" class="bc">
+        <em>🧘</em>
+        <div class="bc-name">ЙОГА</div>
+        <div class="bc-ct">1 СОБЫТИЕ</div>
+        <span class="bc-arr">↗</span>
+      </a>
+      <a href="/BFF26/events/?sport=boxing" class="bc">
+        <em>🥊</em>
+        <div class="bc-name">БОЙ</div>
+        <div class="bc-ct">1 СОБЫТИЕ</div>
+        <span class="bc-arr">↗</span>
+      </a>
+      <a href="/BFF26/events/?sport=volleyball" class="bc">
+        <em>🏐</em>
+        <div class="bc-name">ВОЛЕЙБОЛ</div>
+        <div class="bc-ct">1 СОБЫТИЕ</div>
+        <span class="bc-arr">↗</span>
+      </a>
+      <a href="/BFF26/events/?sport=skiing" class="bc">
+        <em>⛷️</em>
+        <div class="bc-name">ЛЫЖИ</div>
+        <div class="bc-ct">1 СОБЫТИЕ</div>
+        <span class="bc-arr">↗</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     FEATURED EVENTS
+================================================================ -->
+<section class="section">
+  <div class="mw">
+    <div class="sec-head">
+      <div>
+        <p class="s-tag">Топ события</p>
+        <h2 class="s-title">Популярные<br><em>сейчас</em></h2>
+      </div>
+      <a href="/BFF26/events/" class="link-more mag">Все события →</a>
+    </div>
+    <div class="events-grid">
+      <div class="ec fu">
+        <div class="ec-img-w">
+          <img class="ec-img" src="https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=600&q=80" alt="">
+          <span class="ec-badge">⚽ ФУТБОЛ</span>
+          <div class="ec-overlay"><a href="/BFF26/events/" class="ec-ov-btn">Купить билет →</a></div>
+        </div>
+        <div class="ec-body">
+          <h3 class="ec-title">БОЛЬШОЙ ФУТБОЛЬНЫЙ ФЕСТИВАЛЬ 2026</h3>
+          <div class="ec-row"><span class="ec-ic">📅</span> 4–7 августа 2026</div>
+          <div class="ec-row"><span class="ec-ic">📍</span> Лужники, Москва</div>
+          <div class="ec-foot">
+            <span class="ec-price">500 ₽</span>
+            <span class="ec-seats">1 180 мест</span>
+          </div>
+          <div class="ec-prog"><div class="ec-prog-f" style="width:76%"></div></div>
+        </div>
+      </div>
+      <div class="ec fu" style="transition-delay:.1s">
+        <div class="ec-img-w">
+          <img class="ec-img" src="https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=600&q=80" alt="">
+          <span class="ec-badge">🏃 МАРАФОН</span>
+          <div class="ec-overlay"><a href="/BFF26/events/" class="ec-ov-btn">Купить билет →</a></div>
+        </div>
+        <div class="ec-body">
+          <h3 class="ec-title">МОСКОВСКИЙ МАРАФОН 2026</h3>
+          <div class="ec-row"><span class="ec-ic">📅</span> 20 сентября 2026</div>
+          <div class="ec-row"><span class="ec-ic">📍</span> Красная площадь</div>
+          <div class="ec-foot">
+            <span class="ec-price">1 200 ₽</span>
+            <span class="ec-seats">5 500 мест</span>
+          </div>
+          <div class="ec-prog"><div class="ec-prog-f" style="width:63%"></div></div>
+        </div>
+      </div>
+      <div class="ec fu" style="transition-delay:.2s">
+        <div class="ec-img-w">
+          <img class="ec-img" src="https://images.unsplash.com/photo-1546519638405-a9c4ef0f4c8e?w=600&q=80" alt="">
+          <span class="ec-badge">🏀 БАСКЕТБОЛ</span>
+          <div class="ec-overlay"><a href="/BFF26/events/" class="ec-ov-btn">Купить билет →</a></div>
+        </div>
+        <div class="ec-body">
+          <h3 class="ec-title">КУБОК РОССИИ ПО БАСКЕТБОЛУ 3×3</h3>
+          <div class="ec-row"><span class="ec-ic">📅</span> 15 июля 2026</div>
+          <div class="ec-row"><span class="ec-ic">📍</span> Дворцовая площадь, СПб</div>
+          <div class="ec-foot">
+            <span class="ec-price">300 ₽</span>
+            <span class="ec-seats">900 мест</span>
+          </div>
+          <div class="ec-prog"><div class="ec-prog-f" style="width:70%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     STATS
+================================================================ -->
+<section class="section" style="padding-top:0">
+  <div class="mw">
+    <div class="stats-grid">
+      <div class="stat fu">
+        <span class="stat-n"><span class="cu" data-t="10">0</span><span class="a">+</span></span>
+        <span class="stat-l">Мероприятий</span>
+      </div>
+      <div class="stat fu" style="transition-delay:.1s">
+        <span class="stat-n"><span class="cu" data-t="5">0</span></span>
+        <span class="stat-l">Городов России</span>
+      </div>
+      <div class="stat fu" style="transition-delay:.2s">
+        <span class="stat-n"><span class="cu" data-t="24">0</span><span class="a">K+</span></span>
+        <span class="stat-l">Билетов продано</span>
+      </div>
+      <div class="stat fu" style="transition-delay:.3s">
+        <span class="stat-n"><span class="cu" data-t="10">0</span></span>
+        <span class="stat-l">Видов спорта</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     HOW IT WORKS
+================================================================ -->
+<section class="section">
+  <div class="mw">
+    <div style="text-align:center">
+      <p class="s-tag" style="justify-content:center">Как это работает</p>
+      <h2 class="s-title">Три шага до <em>победы</em></h2>
+    </div>
+    <div class="steps">
+      <div class="step fu">
+        <span class="step-n">01 / 03</span>
+        <span class="step-ico">🔍</span>
+        <h3 class="step-h">НАЙДИ СОБЫТИЕ</h3>
+        <p class="step-d">Умный поиск и фильтры по виду спорта, городу и датам. Сравни десятки вариантов.</p>
+      </div>
+      <div class="step fu" style="transition-delay:.1s">
+        <span class="step-n">02 / 03</span>
+        <span class="step-ico">🎫</span>
+        <h3 class="step-h">КУПИ БИЛЕТ</h3>
+        <p class="step-d">Безопасная оплата онлайн за 30 секунд. Выбери количество мест — и готово.</p>
+      </div>
+      <div class="step fu" style="transition-delay:.2s">
+        <span class="step-n">03 / 03</span>
+        <span class="step-ico">⚡</span>
+        <h3 class="step-h">ВПЕРЁД К ПОБЕДЕ</h3>
+        <p class="step-d">Билеты мгновенно в личном кабинете. Покажи QR-код на входе — ты в игре!</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     CTA BANNER
+================================================================ -->
+<section class="section" style="padding-bottom:clamp(60px,8vw,120px)">
+  <div class="mw">
+    <div class="cta-sec fu">
+      <p class="s-tag" style="justify-content:center">Ты организатор?</p>
+      <h2 class="cta-h">СОЗДАЙ<br><em>СОБЫТИЕ</em></h2>
+      <p class="cta-d">Разместите мероприятие на платформе и продавайте билеты тысячам любителей спорта</p>
+      <div class="cta-row">
+        <a href="/BFF26/create-event/" class="btn-p mag">Создать мероприятие</a>
+        <a href="/BFF26/auth/?mode=register" class="btn-g mag">Зарегистрироваться</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     FOOTER
+================================================================ -->
+<footer>
+  <div class="mw">
+    <div class="ft">
+      <div class="ft-brand">
+        <span class="fl">⚡ <em>Sport</em>Market</span>
+        <p>Лучший маркетплейс спортивных мероприятий России. Находи, покупай, побеждай.</p>
+      </div>
+      <div class="ft-col">
+        <h4>Платформа</h4>
+        <ul>
+          <li><a href="/BFF26/events/">Мероприятия</a></li>
+          <li><a href="/BFF26/create-event/">Создать событие</a></li>
+          <li><a href="/BFF26/dashboard/">Личный кабинет</a></li>
+        </ul>
+      </div>
+      <div class="ft-col">
+        <h4>Компания</h4>
+        <ul>
+          <li><a href="#">О нас</a></li>
+          <li><a href="#">Пресса</a></li>
+          <li><a href="#">Карьера</a></li>
+        </ul>
+      </div>
+      <div class="ft-col">
+        <h4>Поддержка</h4>
+        <ul>
+          <li><a href="#">Помощь</a></li>
+          <li><a href="#">Контакты</a></li>
+          <li><a href="#">Конфиденциальность</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="fb">
+      <p class="fb-c">© 2026 SportMarket. Все права защищены.</p>
+      <div class="fb-links">
+        <a href="#">Условия</a>
+        <a href="#">Cookies</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ================================================================
+     SCRIPTS
+================================================================ -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+<script>
+/* ----------------------------------------------------------------
+   LENIS SMOOTH SCROLL
+---------------------------------------------------------------- */
+const lenis = new Lenis({
+  duration: 1.25,
+  easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+  smoothWheel: true,
+});
+(function raf(t){lenis.raf(t);requestAnimationFrame(raf);})(0);
+
+/* ----------------------------------------------------------------
+   GSAP + ScrollTrigger
+---------------------------------------------------------------- */
+gsap.registerPlugin(ScrollTrigger);
+lenis.on('scroll', ScrollTrigger.update);
+gsap.ticker.add(t => lenis.raf(t * 1000));
+gsap.ticker.lagSmoothing(0);
+
+/* ----------------------------------------------------------------
+   PROGRESS BAR
+---------------------------------------------------------------- */
+const prog = document.getElementById('prog');
+window.addEventListener('scroll', () => {
+  const pct = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight) * 100;
+  prog.style.width = pct + '%';
+}, {passive:true});
+
+/* ----------------------------------------------------------------
+   NAV SCROLL
+---------------------------------------------------------------- */
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => nav.classList.toggle('stuck', scrollY > 50), {passive:true});
+
+/* ----------------------------------------------------------------
+   CUSTOM CURSOR
+---------------------------------------------------------------- */
+const ring = document.getElementById('cring');
+const dot  = document.getElementById('cdot');
+let mx = -100, my = -100, rx = -100, ry = -100;
+
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  gsap.to(dot, {x: mx, y: my, duration: 0, overwrite: true});
+}, {passive:true});
+
+(function trackRing(){
+  rx += (mx - rx) * 0.13;
+  ry += (my - ry) * 0.13;
+  gsap.set(ring, {x: rx, y: ry});
+  requestAnimationFrame(trackRing);
+})();
+
+document.querySelectorAll('a,button,.bc,.ec,.hcard-cta,.nav-btn,.btn-p,.btn-g,.mag')
+  .forEach(el => {
+    el.addEventListener('mouseenter', () => ring.classList.add('big'));
+    el.addEventListener('mouseleave', () => ring.classList.remove('big'));
+  });
+
+document.addEventListener('mouseleave', () => gsap.to([ring,dot], {opacity:0, duration:.3}));
+document.addEventListener('mouseenter', () => gsap.to([ring,dot], {opacity:1, duration:.3}));
+
+/* ----------------------------------------------------------------
+   MAGNETIC EFFECT
+---------------------------------------------------------------- */
+document.querySelectorAll('.mag').forEach(el => {
+  el.addEventListener('mousemove', e => {
+    const r = el.getBoundingClientRect();
+    const x = (e.clientX - r.left - r.width  / 2) * 0.28;
+    const y = (e.clientY - r.top  - r.height / 2) * 0.28;
+    gsap.to(el, {x, y, duration:.4, ease:'power2.out'});
+  });
+  el.addEventListener('mouseleave', () => {
+    gsap.to(el, {x:0, y:0, duration:.7, ease:'elastic.out(1,.4)'});
+  });
+});
+
+/* ----------------------------------------------------------------
+   HERO TEXT REVEAL
+---------------------------------------------------------------- */
+const htl = gsap.timeline({delay:.15});
+document.querySelectorAll('.hero-h1 .line > span').forEach((s, i) => {
+  htl.to(s, {y:0, duration:.95, ease:'power4.out'}, i * 0.13);
+});
+htl.to('.hero-desc',  {opacity:1, y:0, duration:.8, ease:'power3.out'}, .52);
+htl.to('.hero-btns',  {opacity:1, y:0, duration:.8, ease:'power3.out'}, .66);
+htl.to('.hero-kpis',  {opacity:1, duration:.8, ease:'power3.out'}, .8);
+htl.to('.hero-vis',   {opacity:1, duration:1.1, ease:'power3.out'}, .42);
+
+/* Hero card float */
+gsap.to('.hcard',   {y:-14, duration:3.2, ease:'sine.inOut', yoyo:true, repeat:-1});
+gsap.to('.float-badge.f1', {y:-8,  duration:2.6, ease:'sine.inOut', yoyo:true, repeat:-1});
+gsap.to('.float-badge.f2', {y:8,   duration:2.1, ease:'sine.inOut', yoyo:true, repeat:-1, delay:.6});
+
+/* ----------------------------------------------------------------
+   SCROLL REVEAL (IntersectionObserver)
+---------------------------------------------------------------- */
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('in'); });
+}, {threshold:.13, rootMargin:'0px 0px -32px 0px'});
+document.querySelectorAll('.fu').forEach(el => io.observe(el));
+
+/* ----------------------------------------------------------------
+   GSAP BENTO STAGGER
+---------------------------------------------------------------- */
+gsap.from('.bc', {
+  scrollTrigger:{trigger:'.bento', start:'top 82%'},
+  opacity:0, y:38, scale:.95,
+  stagger:.055, duration:.85, ease:'power3.out',
+});
+
+/* ----------------------------------------------------------------
+   COUNT-UP
+---------------------------------------------------------------- */
+function countUp(el) {
+  const target = +el.dataset.t;
+  const dur = 1600;
+  const start = performance.now();
+  (function tick(now){
+    const p = Math.min((now - start) / dur, 1);
+    const ep = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.floor(ep * target).toLocaleString('ru');
+    if (p < 1) requestAnimationFrame(tick);
+  })(start);
+}
+
+const cio = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { countUp(e.target); cio.unobserve(e.target); }
+  });
+}, {threshold:.5});
+document.querySelectorAll('.cu').forEach(el => cio.observe(el));
+
+/* hero quick count */
+document.querySelectorAll('[data-cnt]').forEach(el => {
+  const t = +el.dataset.cnt; let c = 0; const s = t / 38;
+  const iv = setInterval(() => {
+    c = Math.min(c + s, t);
+    el.textContent = Math.floor(c).toLocaleString('ru');
+    if (c >= t) clearInterval(iv);
+  }, 42);
+});
+
+/* ----------------------------------------------------------------
+   PAUSE MARQUEE ON HOVER
+---------------------------------------------------------------- */
+document.querySelectorAll('.mq-track').forEach(t => {
+  t.addEventListener('mouseenter', () => t.style.animationPlayState = 'paused');
+  t.addEventListener('mouseleave', () => t.style.animationPlayState = 'running');
+});
+</script>
+</body>
+</html>
